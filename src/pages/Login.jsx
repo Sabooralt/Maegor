@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ToastAction } from "@/components/ui/toast";
 import { useToast } from "@/components/ui/use-toast";
+import { Logo } from "@/Logo/Logo";
 import { ReloadIcon } from "@radix-ui/react-icons";
 import { useFormik } from "formik";
 import { useEffect } from "react";
@@ -39,9 +40,7 @@ export function LoginForm() {
 
   return (
     <div className="size-full grid place-items-center">
-      <div className="">
-        <div className="font-semibold font-sans text-3xl uppercase">Maegor</div>
-      </div>
+      <Logo />
     </div>
   );
 }
