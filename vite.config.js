@@ -1,6 +1,7 @@
 import path from "path";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
+import tailwindcss from "tailwindcss";
 
 export default defineConfig({
   plugins: [react()],
@@ -9,9 +10,18 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  css: {
+    postcss: {
+      plugins: [tailwindcss()],
+    },
+  },
   server: {
     proxy: {
-      "/api": "http://localhost:4000",
+      "/api": {
+        target: "http://localhost:4000",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, "/api"),
+      },
     },
   },
 });

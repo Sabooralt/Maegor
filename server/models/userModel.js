@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const validator = require("validator");
-const jwt = require('jsonwebtoken')
+const jwt = require("jsonwebtoken");
 
 const userSchema = new mongoose.Schema({
   username: {
@@ -19,9 +19,7 @@ const userSchema = new mongoose.Schema({
         "Invalid email format or domain. Only @aptechgdn.net domain is allowed.",
     },
   },
-  phoneNumber: {
-    type: String,
-  },
+
   password: {
     type: String,
     required: true,
@@ -51,16 +49,13 @@ userSchema.pre("save", async function (next) {
 });
 
 userSchema.methods.generateAuthToken = function () {
-    const token = jwt.sign({ _id: this._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    return token;
-  };
+  const token = jwt.sign({ _id: this._id }, process.env.JWT_SECRET, {
+    expiresIn: "1h",
+  });
+  return token;
+};
 
-userSchema.statics.signup = async function (
-  username,
-  email,
-  phoneNumber,
-  password
-) {
+userSchema.statics.signup = async function (username, email, password) {
   if (!username || !email || !password) {
     throw new Error("All fields must be filled.");
   }
@@ -73,7 +68,6 @@ userSchema.statics.signup = async function (
   const user = await this.create({
     username,
     email,
-    phoneNumber,
     password,
   });
 

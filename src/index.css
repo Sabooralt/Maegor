@@ -2,27 +2,114 @@
 @tailwind components;
 @tailwind utilities;
 
-
+.input-styles {
+  @apply border-gray rounded-md focus:ring-indigo-600 w-full;
+}
 
 @font-face {
-  font-family: "Apercu";
-  src: url("/public/fonts/apercu/ApercuPro-Medium.ttf") format("ttf");
+  font-family: "Geist";
+  src: url("/fonts/geist/Geist-Thin.ttf") format("truetype");
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist";
+  src: url("/fonts/geist/Geist-UltraLight.ttf") format("truetype");
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist";
+  src: url("/fonts/geist/Geist-Light.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist";
+  src: url("/fonts/geist/Geist-Regular.ttf") format("truetype");
   font-weight: 400;
   font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist";
+  src: url("/fonts/geist/Geist-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist";
+  src: url("/fonts/geist/Geist-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist";
+  src: url("/fonts/geist/Geist-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist";
+  src: url("/fonts/geist/Geist-Black.ttf") format("truetype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist";
+  src: url("/fonts/geist/Geist-UltraBlack.ttf") format("truetype");
+  font-weight: 950;
+  font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
   font-family: "Apercu";
-  src: url("/public/fonts/apercu/ApercuPro-Bold.ttf") format("ttf");
+  src: url("/fonts/apercu/ApercuPro-Bold.ttf") format("truetype");
   font-weight: 700;
   font-style: normal;
+  font-display: swap;
 }
-
-.cube-track{
-  background-color: #fff;
-  background: repeating-linear-gradient(150deg, #00000020, #00000020 0.5px, transparent 1px, transparent 40px) 
-            , repeating-linear-gradient(30deg, #00000020, #00000020 0.5px, transparent 1px, transparent 40px)
-            , repeating-linear-gradient(90deg, #00000020, #00000020 1px, transparent 1px, transparent 41px);
-  background-size: 81px 46px;	
-  background-position: center; 
+@font-face {
+  font-family: "Apercu";
+  src: url("/fonts/apercu/ApercuPro-Medium.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Apercu";
+  src: url("/fonts/apercu/ApercuPro-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "GT";
+  src: url("/fonts/gt/GTWalsheimPro-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "GT";
+  src: url("/fonts/gt/GTWalsheimPro-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
 }
