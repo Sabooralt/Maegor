@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 .input-styles {
-  @apply border-gray rounded-md focus:ring-indigo-600 w-full;
+  @apply border-gray rounded-md focus:ring-indigo-600 py-3 text-base w-full;
 }
 
 @font-face {

@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const validator = require("validator");
 const jwt = require("jsonwebtoken");
+const { generateAndSendOTC } = require("../utils/otcUtil");
 
 const userSchema = new mongoose.Schema({
   username: {
@@ -32,6 +33,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ["student", "faculty", "admin"],
     default: "student",
+  },
+  verified: {
+    type: Boolean,
+    default: false,
   },
 });
 
@@ -74,6 +79,30 @@ userSchema.statics.signup = async function (username, email, password) {
   return user;
 };
 
+userSchema.statics.login = async function (email, password) {
+  if (!email || !password) {
+    throw new Error("All fields must be filled.");
+  }
+
+  const user = await this.findOne({ email });
+
+  if (!user) {
+    throw new Error("Incorrect email.");
+  }
+
+  const match = await bcrypt.compare(password, user.password);
+  if (!match) {
+    throw new Error("Incorrect password.");
+  }
+  
+  if (!user.registered) {
+    await generateAndSendOTC(email);
+    return user;
+  }
+
+  return user;
+};
+
 userSchema.statics.updatePassword = async function (
   password,
   newPassword,
@@ -98,25 +127,6 @@ userSchema.statics.updatePassword = async function (
 
   user.password = hashedNewPassword;
   await user.save();
-
-  return user;
-};
-
-userSchema.statics.login = async function (email, password) {
-  if (!email || !password) {
-    throw new Error("All fields must be filled.");
-  }
-
-  const user = await this.findOne({ email });
-
-  if (!user) {
-    throw new Error("Incorrect email.");
-  }
-
-  const match = await bcrypt.compare(password, user.password);
-  if (!match) {
-    throw new Error("Incorrect password.");
-  }
 
   return user;
 };

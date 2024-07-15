@@ -1,5 +1,6 @@
-// src/controllers/authController.js
 const User = require("../models/userModel");
+const OTC = require("../models/otcModel");
+const { generateAndSendOTC } = require("../utils/otcUtil");
 
 const Signup = async (req, res) => {
   const { username, email, password } = req.body;
@@ -11,6 +12,51 @@ const Signup = async (req, res) => {
   } catch (error) {
     res.status(400).json({ message: error.message });
     console.log(error);
+  }
+};
+
+const verifyEmail = async (req, res) => {
+  try {
+    const { otp, email } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "User not found." });
+    }
+
+    if (user.verified) {
+      return res.status(200).json({ message: "Email is already verified." });
+    }
+
+    const otpEntry = await OTC.findOne({ email });
+    if (!otpEntry) {
+      return res.status(400).json({ message: "OTP expired." });
+    }
+
+    if (otpEntry.otc !== otp) {
+      return res.status(400).json({ message: "Invalid OTP." });
+    }
+
+    await User.findOneAndUpdate({ email }, { verified: true });
+    await OTC.findOneAndDelete({ email });
+
+    return res.status(200).json({ message: "Email verified successfully." });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error." });
+  }
+};
+
+const sendOTC = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const otp = generateAndSendOTC(email);
+
+    res.status(200).json({ message: "OTP sent successfully." });
+  } catch (error) {
+    console.error("Error sending OTP:", error);
+    res.status(500).json({ message: "Failed to send OTP." });
   }
 };
 
@@ -46,4 +92,4 @@ const Login = async (req, res) => {
   }
 };
 
-module.exports = { Signup, Login,checkUsername };
+module.exports = { Signup, sendOTC, Login, checkUsername, verifyEmail };

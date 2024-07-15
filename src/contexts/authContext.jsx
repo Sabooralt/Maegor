@@ -1,5 +1,5 @@
 import { LoadingSpinner } from "@/loading/LoadingSpinner";
-import { useEffect, useReducer, createContext } from "react";
+import { useEffect, useReducer, createContext, useContext } from "react";
 
 export const AuthContext = createContext();
 
@@ -32,7 +32,7 @@ export const authReducer = (state, action) => {
 export const AuthContextProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, {
     user: null,
-    loading: true, 
+    loading: true,
   });
 
   const logout = () => {
@@ -43,9 +43,9 @@ export const AuthContextProvider = ({ children }) => {
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (user) {
-      dispatch({ type: "LOGIN", payload: user }); 
+      dispatch({ type: "LOGIN", payload: user });
     } else {
-      dispatch({ type: "LOGIN", payload: null }); 
+      dispatch({ type: "LOGIN", payload: null });
     }
   }, []);
 
@@ -53,9 +53,19 @@ export const AuthContextProvider = ({ children }) => {
     return <LoadingSpinner />;
   }
 
+  console.log("AuthContext state: ", state);
   return (
     <AuthContext.Provider value={{ ...state, dispatch, logout }}>
       {children}
     </AuthContext.Provider>
   );
+};
+
+export const useAuthContext = () => {
+  const context = useContext(AuthContext);
+
+  if (!context) {
+    throw Error("useAuthContext must be used inside an AuthContextProvider");
+  }
+  return context;
 };

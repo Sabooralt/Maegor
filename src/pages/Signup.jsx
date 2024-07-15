@@ -240,10 +240,13 @@ export function SignupForm() {
                 Sign Up
               </Button>
 
-              <div className="mx-auto font-geist flex gap-1 font-light">
+              <div className="mx-auto font-geist flex gap-1 font-normal">
                 <p>Already have an account?</p>
-                <Link to="/auth/login" className="underline   text-indigo-800">
-                  Login in
+                <Link
+                  to="/auth/login"
+                  className="underline underline-offset-4  text-indigo-800"
+                >
+                  Login
                 </Link>
               </div>
             </div>
