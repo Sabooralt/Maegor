@@ -1,5 +1,6 @@
 import { LoadingSpinner } from "@/loading/LoadingSpinner";
 import { useEffect, useReducer, createContext, useContext } from "react";
+import axiosInstance from "../utils/axiosInstance";
 
 export const AuthContext = createContext();
 
@@ -8,7 +9,8 @@ export const authReducer = (state, action) => {
     case "LOGIN":
       return {
         ...state,
-        user: action.payload,
+        user: action.payload.user,
+        token: action.payload.token,
         loading: false,
       };
     case "UPDATE_DETAILS":
@@ -23,6 +25,8 @@ export const authReducer = (state, action) => {
       return {
         ...state,
         user: null,
+        token: null,
+        loading: false,
       };
     default:
       return state;
@@ -36,16 +40,27 @@ export const AuthContextProvider = ({ children }) => {
   });
 
   const logout = () => {
-    localStorage.removeItem("user");
+    localStorage.removeItem("token");
     dispatch({ type: "LOGOUT" });
   };
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (user) {
-      dispatch({ type: "LOGIN", payload: user });
+    const token = localStorage.getItem("token");
+    if (token) {
+      axiosInstance
+        .get("/user/me", { headers: { Authorization: `Bearer ${token}` } })
+        .then((response) => {
+          dispatch({
+            type: "LOGIN",
+            payload: { user: response.data, token },
+          });
+        })
+        .catch(() => {
+          localStorage.removeItem("token");
+          dispatch({ type: "LOGOUT" });
+        });
     } else {
-      dispatch({ type: "LOGIN", payload: null });
+      dispatch({ type: "LOGIN", payload: { user: null, token: null } });
     }
   }, []);
 

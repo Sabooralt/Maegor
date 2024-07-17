@@ -30,7 +30,7 @@ export const VerifyEmail = () => {
     }
 
     return () => clearInterval(interval);
-  }, [timer]);
+  }, [timer, canResend, setCanResend]);
 
   const handleResendClick = async () => {
     try {
@@ -69,22 +69,14 @@ export const VerifyEmail = () => {
       });
 
       if (response.status === 200) {
-        toast("Email Verified Successfully!", {
-          description: `Redirecting your to the home page!`,
-          action: {
-            label: "Home",
-            onClick: () => navigate(`/`),
-          },
-        });
-        setTimeout(() => {
-          navigate("/");
-          const user = JSON.parse(localStorage.getItem("user"));
+        toast.success("Email Verified Successfully!");
 
-          if (user) {
-            user.verified = true;
-            localStorage.setItem("user", JSON.stringify(user));
-          }
-        }, 2000);
+        const user = JSON.parse(localStorage.getItem("user"));
+        if (user) {
+          user.verified = true;
+          localStorage.setItem("user", JSON.stringify(user));
+        }
+        navigate("/");
       }
     } catch (err) {
       if (err.response) {
@@ -107,16 +99,18 @@ export const VerifyEmail = () => {
   };
 
   return (
-    <div className="h-screen w-full relative">
+    <div className="h-screen w-full relative font-geist">
       <div className="size-fit relative top-5 left-5">
         <Logo size={50} />
       </div>
-      <div className="grid gap-5 w-fit  mx-auto place-items-center">
+      <div className="grid gap-5 w-fit py-10  mx-auto place-items-center">
         <div className="size-52">
           <img src="/images/verify-email.png" />
         </div>
 
-        <h1 className="text-4xl font-semibold text-center">OTP Verification</h1>
+        <h1 className="text-4xl font-semibold text-center text-neutral-900">
+          OTP Verification
+        </h1>
 
         <p className="text-center">
           One Time Password (OTP) has been sent via Email to <br />

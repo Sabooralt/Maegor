@@ -8,23 +8,23 @@ const userSchema = new mongoose.Schema({
   username: {
     type: String,
     required: true,
+    minlength: 3,
+    maxlength: 20,
+    lowercase: true,
+    trim: true,
   },
   email: {
     type: String,
     required: true,
     unique: true,
-    validate: {
-      validator: (value) =>
-        validator.isEmail(value) && value.endsWith("@aptechgdn.net"),
-      message:
-        "Invalid email format or domain. Only @aptechgdn.net domain is allowed.",
-    },
+   
   },
 
   password: {
     type: String,
     required: true,
     minlength: 6,
+    select: false,
   },
   profilePicture: {
     type: String,
@@ -35,6 +35,10 @@ const userSchema = new mongoose.Schema({
     default: "student",
   },
   verified: {
+    type: Boolean,
+    default: false,
+  },
+  isLoggedIn: {
     type: Boolean,
     default: false,
   },
@@ -55,7 +59,7 @@ userSchema.pre("save", async function (next) {
 
 userSchema.methods.generateAuthToken = function () {
   const token = jwt.sign({ _id: this._id }, process.env.JWT_SECRET, {
-    expiresIn: "1h",
+    expiresIn: "10d",
   });
   return token;
 };
@@ -84,7 +88,7 @@ userSchema.statics.login = async function (email, password) {
     throw new Error("All fields must be filled.");
   }
 
-  const user = await this.findOne({ email });
+  const user = await this.findOne({ email }).select("+password");
 
   if (!user) {
     throw new Error("Incorrect email.");
@@ -94,13 +98,23 @@ userSchema.statics.login = async function (email, password) {
   if (!match) {
     throw new Error("Incorrect password.");
   }
-  
-  if (!user.registered) {
+
+  if (!user.verified) {
     await generateAndSendOTC(email);
-    return user;
+    user.isLoggedIn = true;
+
+    await user.save();
+    const token = user.generateAuthToken();
+    const { password: pwd, ...userWithoutPassword } = user.toObject();
+    return { user: userWithoutPassword, token };
   }
 
-  return user;
+  user.isLoggedIn = true;
+
+  await user.save();
+  const token = user.generateAuthToken();
+  const { password: pwd, ...userWithoutPassword } = user.toObject();
+  return { user: userWithoutPassword, token };
 };
 
 userSchema.statics.updatePassword = async function (

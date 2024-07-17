@@ -2,19 +2,15 @@ const User = require("../models/userModel");
 const OTC = require("../models/otcModel");
 const { generateAndSendOTC } = require("../utils/otcUtil");
 
-const Signup = async (req, res) => {
-  const { username, email, password } = req.body;
-
+const getUserDetails = async (req, res) => {
   try {
-    const user = await User.signup(username, email, password);
-
-    res.status(201).json({ user });
+    const user = req.user;
+    res.json(user);
   } catch (error) {
-    res.status(400).json({ message: error.message });
     console.log(error);
+    res.status(500).json({ error });
   }
 };
-
 const verifyEmail = async (req, res) => {
   try {
     const { otp, email } = req.body;
@@ -80,16 +76,36 @@ const checkUsername = async (req, res) => {
   }
 };
 
+const Signup = async (req, res) => {
+  const { username, email, password } = req.body;
+
+  try {
+    const user = await User.signup(username, email, password);
+
+    res.status(201).json({ user });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+    console.log(error);
+  }
+};
+
 const Login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const user = await User.login(email, password);
-    const token = user.generateAuthToken();
+    const { user, token } = await User.login(email, password);
+
     res.json({ user, token });
   } catch (error) {
     res.status(401).json({ message: error.message });
   }
 };
 
-module.exports = { Signup, sendOTC, Login, checkUsername, verifyEmail };
+module.exports = {
+  Signup,
+  getUserDetails,
+  sendOTC,
+  Login,
+  checkUsername,
+  verifyEmail,
+};

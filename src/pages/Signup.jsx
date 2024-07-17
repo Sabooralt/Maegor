@@ -61,17 +61,22 @@ export function SignupForm() {
       confirmPassword: "",
     },
     validationSchema: Yup.object({
-      username: Yup.string().trim().required("Username is required."),
+      username: Yup.string()
+        .trim()
+        .required("Username is required.")
+        .min(3, "Username must be at least 3 characters.")
+        .max(20, "Username must not exceed 20 characters.")
+        .transform((value) => (value ? value.toLowerCase() : value)),
 
       email: Yup.string()
         .trim()
-        .matches(
-          /^[\w.%+-]+@aptechgdn\.net$/,
-          "Only @aptechgdn.net emails are accepted."
-        )
+        
         .required("Email is required."),
 
-      password: Yup.string().trim().required("Password is required."),
+      password: Yup.string()
+        .trim()
+        .required("Password is required.")
+        .min(6, "Password must be atleast 6 characters."),
 
       confirmPassword: Yup.string()
         .trim()
@@ -94,6 +99,8 @@ export function SignupForm() {
               onClick: () => navigate(`/auth/login`),
             },
           });
+
+          navigate("/auth/login")
         }
       } catch (err) {
         if (err.response) {

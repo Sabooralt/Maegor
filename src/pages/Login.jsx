@@ -24,10 +24,7 @@ export function LoginForm() {
     validationSchema: Yup.object({
       email: Yup.string()
         .trim()
-        .matches(
-          /^[\w.%+-]+@aptechgdn\.net$/,
-          "Only @aptechgdn.net emails are accepted."
-        )
+
         .required("Email is required."),
 
       password: Yup.string().trim().required("Password is required."),
@@ -40,32 +37,19 @@ export function LoginForm() {
         });
 
         if (response.status === 200) {
-          if (response.data.user.verified == false) {
-            dispatch({
-              type: "LOGIN",
-              payload: { ...response.data.user, token: response.data.token },
-            });
-            localStorage.setItem(
-              "user",
-              JSON.stringify({
-                ...response.data.user,
-                token: response.data.token,
-              })
-            );
+          const { user, token } = response.data;
+
+          dispatch({
+            type: "LOGIN",
+            payload: { user, token },
+          });
+
+          localStorage.setItem("token", token);
+
+          if (!user.verified) {
             navigate("/verify-email");
           } else {
             toast("Logged In Successfully!");
-            dispatch({
-              type: "LOGIN",
-              payload: { ...response.data.user, token: response.data.token },
-            });
-            localStorage.setItem(
-              "user",
-              JSON.stringify({
-                ...response.data.user,
-                token: response.data.token,
-              })
-            );
 
             setTimeout(() => {
               navigate("/");

@@ -5,7 +5,9 @@
 .input-styles {
   @apply border-gray rounded-md focus:ring-indigo-600 py-3 text-base w-full;
 }
-
+.items-flex-between {
+  @apply flex flex-row justify-between items-center gap-2;
+}
 @font-face {
   font-family: "Geist";
   src: url("/fonts/geist/Geist-Thin.ttf") format("truetype");
@@ -112,4 +114,30 @@
   font-weight: 700;
   font-style: normal;
   font-display: swap;
+}
+.cube-track {
+  background-color: #fff;
+  background: repeating-linear-gradient(
+      150deg,
+      #00000020,
+      #00000020 0.5px,
+      transparent 1px,
+      transparent 40px
+    ),
+    repeating-linear-gradient(
+      30deg,
+      #00000020,
+      #00000020 0.5px,
+      transparent 1px,
+      transparent 40px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      #00000020,
+      #00000020 1px,
+      transparent 1px,
+      transparent 41px
+    );
+  background-size: 81px 46px;
+  background-position: center;
 }

@@ -5,6 +5,9 @@ import { HomeLayout } from "./layouts/RootLayout";
 import { SignupForm } from "./pages/Signup";
 import { VerifyEmail } from "./pages/VerifyEmail";
 import { useAuthContext } from "./contexts/authContext";
+import { Chat } from "./pages/Chat/Chat";
+import { SelectChat } from "./pages/Chat/components/selectchat";
+import { Chatting } from "./pages/Chat/components/chatting";
 
 export const ClientRoutes = () => {
   const { user } = useAuthContext();
@@ -28,6 +31,16 @@ export const ClientRoutes = () => {
         path="/verify-email"
         element={user && user.verified ? <Navigate to="/" /> : <VerifyEmail />}
       />
+
+      <Route
+        path="/chat"
+        element={
+          user && user.verified ? <Chat /> : <Navigate to="/auth/login" />
+        }
+      >
+        <Route index element={<SelectChat />} />
+        <Route path="/chat/:roomId" element={<Chatting />} />
+      </Route>
     </Routes>
   );
 };
