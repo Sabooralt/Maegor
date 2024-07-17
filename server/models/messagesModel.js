@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const messageSchema = new Schema(
   {
-    roomId: { type: Schema.Types.ObjectId, ref: "Room", required: true },
+    roomId: { type: String, required: true },
     senderId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     message: { type: String, required: true },
   },
@@ -12,4 +12,4 @@ const messageSchema = new Schema(
 
 const Message = mongoose.model("Message", messageSchema);
 
-module.exports = Message
+module.exports = Message;

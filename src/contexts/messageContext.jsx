@@ -1,5 +1,7 @@
-import { useEffect, useReducer, createContext, useContext } from "react";
-import axiosInstance from "../utils/axiosInstance";
+import { useReducer, createContext, useContext, useEffect } from "react";
+import { socket } from "@/socket";
+import { toast } from "sonner";
+import { useSelectedRoom } from "./selectRoomContext";
 
 export const MessageContext = createContext();
 
@@ -8,7 +10,21 @@ export const messageReducer = (state, action) => {
     case "FETCH_MESSAGES":
       return {
         ...state,
-        messages: action.payload.messages,
+        messages: action.payload,
+      };
+
+    case "ADD_MESSAGE":
+      return {
+        ...state,
+        messages: state.messages
+          ? [action.payload, ...state.messages]
+          : [action.payload],
+      };
+
+    case "CLEAR_MESSAGES":
+      return {
+        ...state,
+        messages: null,
       };
     case "FETCH_MESSAGES_ERROR":
       return {
@@ -21,6 +37,7 @@ export const messageReducer = (state, action) => {
 };
 
 export const MessageContextProvider = ({ children }) => {
+  const { selectedRoom } = useSelectedRoom();
   const initialState = {
     messages: [],
     error: null,
@@ -28,8 +45,22 @@ export const MessageContextProvider = ({ children }) => {
 
   const [state, dispatch] = useReducer(messageReducer, initialState);
 
- 
   console.log("MessageContext state: ", state);
+
+  useEffect(() => {
+    const newMessage = (data) => {
+      if (selectedRoom?.roomId === data.roomId) {
+        dispatch({ type: "ADD_MESSAGE", payload: data });
+        toast("You have a new message");
+      }
+    };
+
+    socket.on("newMessage", newMessage);
+
+    return () => {
+      socket.off("newMessage", newMessage);
+    };
+  }, [socket]);
 
   return (
     <MessageContext.Provider value={{ ...state, dispatch }}>

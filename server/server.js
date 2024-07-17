@@ -19,6 +19,7 @@ const io = new Server(server, {
 // Routes initialization
 const userRoutes = require("./routes/userRoutes");
 const roomRoutes = require("./routes/roomRoutes");
+const messageRoutes = require("./routes/messageRoutes");
 const generateRoomId = require("./utils/generateRoomId");
 const { saveMessage } = require("./controllers/messageController");
 
@@ -26,6 +27,7 @@ const { saveMessage } = require("./controllers/messageController");
 
 const userSockets = {};
 const facultySockets = {};
+const roomSockets = {};
 
 app.use(express.json());
 app.use(cors());
@@ -33,12 +35,14 @@ app.use((req, res, next) => {
   req.io = io;
   req.userSockets = userSockets;
   req.facultySockets = facultySockets;
+  req.roomSockets = roomSockets;
   console.log(req.path, req.method);
   next();
 });
 
 app.use("/api/user", userRoutes);
 app.use("/api/rooms", roomRoutes);
+app.use("/api/messages", messageRoutes)
 
 mongoose
   .connect(process.env.MONGO_URI)
@@ -55,7 +59,6 @@ mongoose
 const waitingRoom = new Map();
 
 io.on("connection", (socket) => {
-  console.log("A user connected");
 
   socket.on("register", ({ role, userId }) => {
     if (role === "student") {
@@ -72,6 +75,8 @@ io.on("connection", (socket) => {
       }
     }
   });
+
+ 
 
   socket.on("join_waiting_room", async ({ userId }) => {
     if (waitingRoom.has(userId)) {
@@ -97,8 +102,6 @@ io.on("connection", (socket) => {
         !waitingRoom.get(id).inRoom
     );
 
-    console.log(waitingRoom);
-    console.log("Available Students", availableStudents);
     if (availableStudents.length >= 1) {
       const student1 = userId;
       const student2 = availableStudents[0];

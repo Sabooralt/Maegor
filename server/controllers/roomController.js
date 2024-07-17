@@ -68,7 +68,6 @@ const getRoomById = async (req, res) => {
       return res.status(404).json({ message: "Room not found" });
     }
 
-    // Check if the room is anonymous; if so, do not populate members
     if (room.roomType === "anonymous") {
       return res.status(200).json({
         _id: room._id,
@@ -79,7 +78,6 @@ const getRoomById = async (req, res) => {
       });
     }
 
-    // Check if userId is available in members before populating
     if (room.members.includes(userId)) {
       room = await Room.findOne({ roomId }).populate("members");
       return res.status(200).json(room);

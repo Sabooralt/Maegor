@@ -8,8 +8,8 @@ import "@fontsource/poppins";
 import "./index.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { MessageContextProvider } from "./contexts/messageContext.jsx";
 import { SelectedRoomProvider } from "./contexts/selectRoomContext.jsx";
+import { MessageContextProvider } from "./contexts/messageContext.jsx";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,15 +24,15 @@ const queryClient = new QueryClient({
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <AuthContextProvider>
-      <SelectedRoomProvider>
-        <MessageContextProvider>
+        <SelectedRoomProvider>
+      <MessageContextProvider>
           <Sonner closeButton richColors position="bottom-right" />
           <QueryClientProvider client={queryClient}>
             <App />
           </QueryClientProvider>
           <Toaster />
-        </MessageContextProvider>
-      </SelectedRoomProvider>
+      </MessageContextProvider>
+        </SelectedRoomProvider>
     </AuthContextProvider>
   </React.StrictMode>
 );

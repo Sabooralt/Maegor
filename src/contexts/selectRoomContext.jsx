@@ -10,13 +10,15 @@ export const SelectedRoomProvider = ({ children }) => {
 
   const selectRoom = async (roomId) => {
     try {
-      const { data } = await axiosInstance.get(`/rooms/${roomId}/${user._id}`, {
+      const response = await axiosInstance.get(`/rooms/${roomId}/${user._id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      setSelectedRoom(data);
+      if (response.status === 200) {
+        setSelectedRoom(response.data);
+      }
     } catch (error) {
       console.error("Failed to fetch room details:", error);
     }
