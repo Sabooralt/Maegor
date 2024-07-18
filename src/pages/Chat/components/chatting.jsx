@@ -7,44 +7,38 @@ import { useMessages } from "@/hooks/useMessages";
 import { socket } from "@/socket";
 import axiosInstance from "@/utils/axiosInstance";
 import { useQuery } from "@tanstack/react-query";
-import { LoaderCircle, Paperclip, Send, Smile } from "lucide-react";
+import { format } from "date-fns";
+import { Check, LoaderCircle, Paperclip, Send, Smile } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import ScrollToBottom from "react-scroll-to-bottom";
+import { AnimatePresence, motion } from "framer-motion";
+import { toast } from "sonner";
 
 export const Chatting = () => {
   const { roomId } = useParams();
-  const { user } = useAuthContext();
-
+  const { dispatch } = useMessageContext();
   const { selectedRoom, selectRoom } = useSelectedRoom();
 
   useEffect(() => {
     if (!selectedRoom) {
       selectRoom(roomId);
     }
-  }, [selectedRoom, selectedRoom]);
-
-  useEffect(() => {
-    if (roomId && user) {
-      socket.emit("join_room", { roomId, userId: user._id });
-    }
-  }, [roomId, user]);
+  }, [roomId, selectedRoom]);
 
   if (!selectedRoom) {
     return (
       <div className="flex items-center gap-2 text-neutral-600 justify-center size-full">
         <LoaderCircle className="animate-spin size-5" />
-
         <span>Loading...</span>
       </div>
     );
   }
 
   return (
-    <div className="md:col-span-10 relative  flex flex-col  rounded-xl px-3 col-span-9 h-screen w-full cube-track">
+    <div className="md:col-span-10 relative flex flex-col rounded-xl col-span-9 h-screen w-full cube-track">
       <ChattingHeader selectedRoom={selectedRoom} />
-
-      <ChatMessages selectedRoom={selectedRoom} />
-
+      <ChatMessages />
       <ChatInput />
     </div>
   );
@@ -52,11 +46,11 @@ export const Chatting = () => {
 
 export const ChattingHeader = ({ selectedRoom }) => {
   return (
-    <div className="bg-gradient-to-r h-fit relative top-0 p-3 flex rounded-xl flex-row justify-between from-indigo-600 to-purple-600 w-full">
+    <div className="bg-gradient-to-r h-fit relative top-0 p-3 flex rounded-br-lg shadow-lg flex-row justify-between from-indigo-600 to-purple-600 w-full">
       <div className="flex items-center justify-between w-full rounded-lg gap-2">
         <div className="flex gap-2 items-center text-white">
           <div className="size-6 bg-white rounded-full">
-            <Avatar>
+            <Avatar>  
               <AvatarImage
                 src={
                   selectedRoom.roomType === "anonymous"
@@ -74,37 +68,22 @@ export const ChattingHeader = ({ selectedRoom }) => {
               : selectedRoom.members.username}
           </p>
         </div>
-
         <p className="text-slate-100 text-xs">Online 3 hours ago</p>
       </div>
     </div>
   );
 };
 
-export const ChatMessages = ({ selectedRoom }) => {
-  const { dispatch: messageDispatch, messages } = useMessageContext();
+export const ChatMessages = () => {
+  const { selectedRoom } = useSelectedRoom();
 
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetching,
-    isLoading,
-    error,
-    status,
-  } = useMessages(selectedRoom?.roomId);
+  const { state } = useMessageContext();
 
-  useEffect(() => {
-    if (data) {
-      messageDispatch({
-        type: "FETCH_MESSAGES",
-        payload: data.pages[0].messages,
-      });
-    }
-    console.log(data);
-  }, [data, messageDispatch]);
+  const messages = state[selectedRoom.roomId] || [];
+  const { fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error } =
+    useMessages(selectedRoom.roomId);
 
-  if (isFetching) {
+  if (isLoading) {
     return (
       <div className="flex items-center gap-2 text-neutral-600 justify-center size-full">
         <LoaderCircle className="animate-spin size-5" />
@@ -113,9 +92,7 @@ export const ChatMessages = ({ selectedRoom }) => {
     );
   }
 
-  if (error && !data) {
-    console.error("Error fetching messages:", error);
-
+  if (error && messages.length === 0) {
     if (error.response && error.response.status === 404) {
       return (
         <div className="flex items-center gap-2 text-neutral-600 justify-center size-full">
@@ -132,22 +109,104 @@ export const ChatMessages = ({ selectedRoom }) => {
   }
 
   return (
-    <div className="mt-auto">
-      {messages && messages.length > 0 ? (
-        messages.map((message) => (
-          <div key={message._id}>
-            <p>{message.message}</p>
-          </div>
-        ))
-      ) : (
-        <div className="flex items-center gap-2 text-neutral-600 justify-center size-full">
-          <span>No Messages Found.</span>
-        </div>
-      )}
+    <div className="relative w-full h-full overflow-hidden flex flex-col-reverse">
+      <ScrollToBottom
+        initialScrollBehavior="smooth"
+        scrollViewClassName="w-full h-full flex flex-col-reverse"
+        className="w-full h-full"
+      >
+        <AnimatePresence>
+          {messages && messages.length > 0 ? (
+            messages
+              .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+              .map((message, index) => (
+                <motion.div
+                  key={message.messageId}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className={`py-3 px-5 ${message._id}`}
+                >
+                  <MessageBox msg={message} />
+                </motion.div>
+              ))
+          ) : (
+            <div className="flex items-center gap-2 text-neutral-600 justify-center h-full">
+              <span>No Messages Found.</span>
+            </div>
+          )}
+        </AnimatePresence>
 
-      {hasNextPage && (
-        <button onClick={() => fetchNextPage()}>Load More</button>
-      )}
+        <div>
+          <button
+            className="p-5 bg-neutral-900 text-white"
+            onClick={() => {
+              fetchNextPage();
+
+              console.log(hasNextPage);
+            }}
+            disabled={!hasNextPage || isFetchingNextPage}
+          >
+            Load More
+          </button>
+        </div>
+      </ScrollToBottom>
+    </div>
+  );
+};
+
+export const MessageBox = ({ msg }) => {
+  const { user } = useAuthContext();
+  const { selectedRoom } = useSelectedRoom();
+  return (
+    <div
+      className={`relative w-fit max-w-lg flex flex-col gap-2 ${
+        msg.senderId === user?._id ? "ml-auto" : "mr-auto"
+      }`}
+    >
+      <div
+        className={`flex flex-row gap-2 ${
+          msg.senderId === user?._id ? "ml-auto" : "mr-auto"
+        }`}
+      >
+        <div
+          key={msg._id}
+          className={`relative ${
+            msg.message.length >= 54 ? "py-5" : "py-2"
+          } w-fit rounded-lg text-white ${
+            msg.senderId === user?._id
+              ? "bg-neutral-900  rounded-br-none pl-5 pr-6"
+              : "pr-5 rounded-bl-none pl-6 bg-gradient-to-r from-indigo-600 to-purple-600"
+          }`}
+        >
+          <span className="text-lg">{msg.message}</span>
+        </div>
+        {msg.senderId === user?._id && (
+          <div className="size-4 order-first mt-auto flex justify-center items-center rounded-full border-black border ">
+            {msg.success && msg.success && <Check className="size-3" />}
+          </div>
+        )}
+      </div>
+
+      <div className="flex flex-row items-center justify-between gap-2">
+        <div className="flex flex-row items-center gap-2">
+          <Avatar className="bg-black size-6">
+            <AvatarImage src="/images/A_Avatar.png" alt="@shadcn" />
+            <AvatarFallback>CN</AvatarFallback>
+          </Avatar>
+          <p>
+            {msg.senderId === user?._id
+              ? "You"
+              : selectedRoom.roomType === "anonymous"
+              ? "User"
+              : selectedRoom.members.username}{" "}
+          </p>
+        </div>
+        <p className="text-neutral-800 text-xs">
+          {format(new Date(msg.createdAt), "h:mm a")}
+        </p>
+      </div>
     </div>
   );
 };
@@ -161,7 +220,23 @@ export const ChatInput = () => {
   const sendMessage = async () => {
     if (!message.trim()) return;
 
+    const temporaryId = Date.now();
+    const newMessage = {
+      _id: temporaryId,
+      roomId: selectedRoom.roomId,
+      senderId: user._id,
+      message,
+      createdAt: temporaryId,
+      success: false,
+      messageId: temporaryId,
+    };
+
     try {
+      messageDispatch({
+        type: "ADD_MESSAGE",
+        payload: newMessage,
+        roomId: selectedRoom.roomId,
+      });
       const response = await axiosInstance.post(
         `/messages/newMessage`,
         { roomId: selectedRoom.roomId, senderId: user._id, message },
@@ -173,14 +248,19 @@ export const ChatInput = () => {
       );
 
       if (response.status === 201) {
+        const serverMessage = response.data;
+
         messageDispatch({
-          type: "ADD_MESSAGE",
-          payload: response.data,
+          type: "UPDATE_MESSAGE",
+          payload: serverMessage,
+          tempId: temporaryId,
+          roomId: serverMessage.roomId,
         });
-        setMessage("");
       }
     } catch (error) {
-      console.error("Failed to send message:", error);
+      toast.error("Failed to send message:", {
+        description: error,
+      });
     }
   };
 
@@ -197,10 +277,15 @@ export const ChatInput = () => {
             placeholder="Chat away..."
             value={message}
             onChange={(e) => setMessage(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                sendMessage();
+              }
+            }}
             className="resize-none text-md w-full shadow-sm"
           />
         </div>
-
         <button
           onClick={sendMessage}
           className="bg-gradient-to-r from-indigo-600 to-purple-600 px-3 py-2 size-fit rounded-md"

@@ -8,23 +8,35 @@ export const MessageContext = createContext();
 export const messageReducer = (state, action) => {
   switch (action.type) {
     case "FETCH_MESSAGES":
+      console.log("Fetching messages...");
       return {
         ...state,
-        messages: action.payload,
+        [action.roomId]: action.payload,
       };
-
     case "ADD_MESSAGE":
+      console.log("Add Message...");
+
       return {
         ...state,
-        messages: state.messages
-          ? [action.payload, ...state.messages]
+        [action.roomId]: state[action.roomId]
+          ? [action.payload, ...state[action.roomId]]
           : [action.payload],
+      };
+    case "UPDATE_MESSAGE":
+      console.log("Update Message...");
+      return {
+        ...state,
+        [action.roomId]: state[action.roomId].map((message) =>
+          message._id === action.tempId
+            ? { ...message, ...action.payload, messageId: action.tempId }
+            : message
+        ),
       };
 
     case "CLEAR_MESSAGES":
       return {
         ...state,
-        messages: null,
+        [action.roomId]: [],
       };
     case "FETCH_MESSAGES_ERROR":
       return {
@@ -39,18 +51,15 @@ export const messageReducer = (state, action) => {
 export const MessageContextProvider = ({ children }) => {
   const { selectedRoom } = useSelectedRoom();
   const initialState = {
-    messages: [],
     error: null,
   };
 
   const [state, dispatch] = useReducer(messageReducer, initialState);
 
-  console.log("MessageContext state: ", state);
-
   useEffect(() => {
     const newMessage = (data) => {
-      if (selectedRoom?.roomId === data.roomId) {
-        dispatch({ type: "ADD_MESSAGE", payload: data });
+      if (selectedRoom.roomId === data.roomId) {
+        dispatch({ type: "ADD_MESSAGE", payload: data, roomId: data.roomId });
         toast("You have a new message");
       }
     };
@@ -60,10 +69,12 @@ export const MessageContextProvider = ({ children }) => {
     return () => {
       socket.off("newMessage", newMessage);
     };
-  }, [socket]);
+  }, [selectedRoom]);
+
+  /* console.log("MessageContextProvider:", state); */
 
   return (
-    <MessageContext.Provider value={{ ...state, dispatch }}>
+    <MessageContext.Provider value={{ state, dispatch }}>
       {children}
     </MessageContext.Provider>
   );
@@ -71,12 +82,10 @@ export const MessageContextProvider = ({ children }) => {
 
 export const useMessageContext = () => {
   const context = useContext(MessageContext);
-
   if (!context) {
     throw Error(
       "useMessageContext must be used inside a MessageContextProvider"
     );
   }
-
   return context;
 };

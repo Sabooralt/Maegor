@@ -24,15 +24,16 @@ const queryClient = new QueryClient({
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <AuthContextProvider>
-        <SelectedRoomProvider>
-      <MessageContextProvider>
+      <SelectedRoomProvider>
+        <MessageContextProvider>
           <Sonner closeButton richColors position="bottom-right" />
           <QueryClientProvider client={queryClient}>
+            <ReactQueryDevtools initialIsOpen={false} />
             <App />
           </QueryClientProvider>
           <Toaster />
-      </MessageContextProvider>
-        </SelectedRoomProvider>
+        </MessageContextProvider>
+      </SelectedRoomProvider>
     </AuthContextProvider>
   </React.StrictMode>
 );
