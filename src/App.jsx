@@ -9,7 +9,7 @@ function App() {
     if (user) {
       socket.emit("register", { role: user.role, userId: user._id });
     }
-  }, [user]);
+  }, [user, socket]);
   return (
     <div>
       <BrowserRouter>

@@ -8,8 +8,9 @@ const messageSchema = new Schema(
     senderId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     message: { type: String, required: true },
     success: { type: Boolean, default: true },
+    seen: { type: Boolean, default: false },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const Message = mongoose.model("Message", messageSchema);

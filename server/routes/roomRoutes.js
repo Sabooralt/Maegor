@@ -1,9 +1,7 @@
 const express = require("express");
 const {
   getRoomsByUserId,
-  getAnonymousRoomsByUserId,
-  getGroupRoomsByUserId,
-  getFriendRoomsByUserId,
+
   getRoomById,
   createRoom,
   updateRoom,
@@ -13,13 +11,7 @@ const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-router.get("/:userId", authMiddleware, getRoomsByUserId);
-
-router.get("/:userId/anonymous", authMiddleware, getAnonymousRoomsByUserId);
-
-router.get("/:userId/group", authMiddleware, getGroupRoomsByUserId);
-
-router.get("/:userId/friend", authMiddleware, getFriendRoomsByUserId);
+router.get("/:userId/user_rooms", authMiddleware, getRoomsByUserId);
 
 router.get("/:roomId/:userId", authMiddleware, getRoomById);
 

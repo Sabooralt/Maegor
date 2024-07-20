@@ -40,9 +40,10 @@ const saveMessage = async (req, res) => {
   }
   return res.status(201).json(newMessage);
 };
+
 const getMessages = async (req, res) => {
   const { roomId } = req.params;
-  const { page = 0, limit = 20 } = req.query;
+  const { pageParam, limit = 40 } = req.query;
 
   try {
     const room = await Room.findOne({ roomId });
@@ -52,10 +53,16 @@ const getMessages = async (req, res) => {
 
     const messages = await Message.find({ roomId })
       .sort({ createdAt: -1 })
-      .skip(page * limit)
-      .limit(parseInt(limit));
+      .skip(pageParam * limit)
+      .limit(parseInt(limit) + 1);
 
-    res.status(200).json({ messages });
+    const hasMore = messages.length > limit;
+    if (hasMore) {
+      messages.pop();
+    }
+
+    const messageLength = messages.length;
+    res.status(200).json({ messages, hasMore, messageLength });
   } catch (error) {
     res.status(500).json({
       message: "Failed to fetch messages",

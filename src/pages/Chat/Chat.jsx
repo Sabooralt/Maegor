@@ -3,9 +3,11 @@ import { ChatSidebar } from "./components/chatsidebar";
 
 export const Chat = () => {
   return (
-    <div className=" w-full font-geist ">
-      <div className="grid size-full grid-cols-12">
-        <ChatSidebar />
+    <div className="w-full font-geist">
+      <div className="flex size-full flex-row">
+        <div>
+          <ChatSidebar />
+        </div>
 
         <Outlet />
       </div>

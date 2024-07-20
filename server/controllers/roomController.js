@@ -1,61 +1,64 @@
 const Room = require("../models/roomModel");
 
+const Message = require("../models/messagesModel");
+
 const getRoomsByUserId = async (req, res) => {
   const { userId } = req.params;
-  try {
-    const rooms = await Room.find({ members: userId }).populate("members");
-    res.status(200).json(rooms);
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error retrieving rooms", error: error.message });
-  }
-};
 
-const getAnonymousRoomsByUserId = async (req, res) => {
-  const { userId } = req.params;
   try {
-    const rooms = await Room.find({
-      members: userId,
-      roomType: "anonymous",
-    }).populate("members");
-    res.status(200).json(rooms);
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    const rooms = await Room.find({ members: userId });
+
+    if (!rooms.length) {
+      return res.status(404).json({ message: "No rooms found for this user" });
+    }
+
+    const roomsWithLastMessage = await Promise.all(
+      rooms.map(async (room) => {
+        try {
+          const lastMessage = await Message.findOne({
+            roomId: room.roomId,
+          }).sort({ createdAt: -1 });
+
+          return {
+            ...room._doc,
+            lastMessage: lastMessage
+              ? {
+                  _id: lastMessage._id,
+                  senderId: lastMessage.senderId,
+                  message: lastMessage.message,
+                  createdAt: lastMessage.createdAt,
+                }
+              : null,
+          };
+        } catch (messageError) {
+          console.error(
+            `Error fetching last message for room ${room.roomId}:`,
+            messageError
+          );
+          return {
+            ...room._doc,
+            lastMessage: null,
+          };
+        }
+      })
+    );
+
+    res.status(200).json(roomsWithLastMessage);
   } catch (error) {
+    console.error("Error retrieving rooms:", error);
     res.status(500).json({
-      message: "Error retrieving anonymous rooms",
+      message: "Error retrieving rooms",
       error: error.message,
     });
   }
 };
 
-const getGroupRoomsByUserId = async (req, res) => {
-  const { userId } = req.params;
-  try {
-    const rooms = await Room.find({
-      members: userId,
-      roomType: "group",
-    }).populate("members");
-    res.status(200).json(rooms);
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error retrieving group rooms", error: error.message });
-  }
-};
-
-const getFriendRoomsByUserId = async (req, res) => {
-  const { userId } = req.params;
-  try {
-    const rooms = await Room.find({
-      members: userId,
-      roomType: "friend",
-    }).populate("members");
-    res.status(200).json(rooms);
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error retrieving friend rooms", error: error.message });
-  }
+module.exports = {
+  getRoomsByUserId,
 };
 
 const getRoomById = async (req, res) => {
@@ -146,9 +149,6 @@ const deleteRoom = async (req, res) => {
 
 module.exports = {
   getRoomsByUserId,
-  getAnonymousRoomsByUserId,
-  getGroupRoomsByUserId,
-  getFriendRoomsByUserId,
   getRoomById,
   createRoom,
   updateRoom,

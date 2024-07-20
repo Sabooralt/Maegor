@@ -1,76 +1,60 @@
 import { Button } from "@/components/ui/button";
 import { useAuthContext } from "@/contexts/authContext";
 import { useSelectedRoom } from "@/contexts/selectRoomContext";
+import { socket } from "@/socket";
 import axiosInstance from "@/utils/axiosInstance";
 import { Separator } from "@radix-ui/react-separator";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { DotSquare, Ellipsis, MessageCirclePlus, Plus } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
+import { toast } from "sonner";
+import { useAnonymousSocketEvents } from "@/hooks/useAnonymousSocket";
+import RoomList from "./RoomList";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export const ChatSidebar = () => {
   const { user, token } = useAuthContext();
   const { selectRoom, selectedRoom } = useSelectedRoom();
 
+  useAnonymousSocketEvents();
+
   const { isPending, error, data, isFetching } = useQuery({
     queryKey: ["anonymousRoom"],
     queryFn: async () => {
-      const response = await axiosInstance.get(`/rooms/${user._id}/anonymous`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const response = await axiosInstance.get(
+        `/rooms/${user._id}/user_rooms`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
       return await response.data;
     },
   });
 
-  if (isPending) return "Loading...";
+  if (isFetching) return "Loading...";
 
   if (error) return "An error has occurred: " + error.message;
-  const joinWatingRoom = () => {
-    socket.emit("join_waiting_room", { userId: user._id });
-  };
+
   return (
-    <div className="h-full rounded-xl shadow-xl place-items-start grid px-4 bg-[#f9f9f9] md:col-span-2 col-span-3">
-      <div className="flex w-full justify-between py-2 items-center">
+    <ScrollArea className="h-screen w-full rounded-xl bg-white shadow-xl">
+      <div className="flex w-full items-center justify-between p-2">
         <h1 className="text-2xl font-semibold">Chats</h1>
 
         <div>
-          <button className="p-2 rounded-full bg-transparent transition-colors bg-white  ">
-            <MessageCirclePlus className="size-6 " />
+          <button className="rounded-full bg-transparent bg-white p-2 transition-colors">
+            <MessageCirclePlus className="size-6" />
           </button>
         </div>
       </div>
       <Separator />
 
-      <div className="flex flex-col gap-5 w-full">
-        <h2 className="text-xl font-semibold">Anonymous Rooms</h2>
-
-        <div className="grid gap-3 w-full">
-          <Button
-            onClick={joinWatingRoom}
-            className=" bg-slate-900 flex items-center border-neutral-200 text-white"
-          >
-            <Plus className="size-5" />
-            <span>New Anonymous Chat</span>
-          </Button>
-          {data &&
-            data.map((item, index) => (
-              <Link to={`/chat/${item.roomId}`} key={item.roomId}>
-                <button
-                  disabled={selectedRoom && selectedRoom.roomId === item.roomId}
-                  onClick={() => selectRoom(item.roomId)}
-                  className={`cursor-pointer disabled:cursor-not-allowed disabled:pointer-events-none disabled:bg-slate-200 group w-full flex shadow-none items-center bg-transparent justify-between rounded-md p-2 hover:shadow-md`}
-                >
-                  <h1 className="font-normal transition-transform group-hover:translate-x-2 text-sm line-clamp-1">
-                    Anonymouse chat {index + 1}
-                  </h1>
-
-                  <Ellipsis className="size-4 hidden group-hover:block transition-colors hover:text-black text-neutral-700" />
-                </button>
-              </Link>
-            ))}
-        </div>
+      <div className="relative grid gap-5 py-6">
+        {data && <RoomList data={data} />}
       </div>
-    </div>
+    </ScrollArea>
   );
 };

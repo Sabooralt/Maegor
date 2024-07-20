@@ -29,7 +29,7 @@ export const messageReducer = (state, action) => {
         [action.roomId]: state[action.roomId].map((message) =>
           message._id === action.tempId
             ? { ...message, ...action.payload, messageId: action.tempId }
-            : message
+            : message,
         ),
       };
 
@@ -71,7 +71,7 @@ export const MessageContextProvider = ({ children }) => {
     };
   }, [selectedRoom]);
 
-  /* console.log("MessageContextProvider:", state); */
+  console.log("MessageContextProvider:", state);
 
   return (
     <MessageContext.Provider value={{ state, dispatch }}>
@@ -84,7 +84,7 @@ export const useMessageContext = () => {
   const context = useContext(MessageContext);
   if (!context) {
     throw Error(
-      "useMessageContext must be used inside a MessageContextProvider"
+      "useMessageContext must be used inside a MessageContextProvider",
     );
   }
   return context;

@@ -42,7 +42,7 @@ app.use((req, res, next) => {
 
 app.use("/api/user", userRoutes);
 app.use("/api/rooms", roomRoutes);
-app.use("/api/messages", messageRoutes)
+app.use("/api/messages", messageRoutes);
 
 mongoose
   .connect(process.env.MONGO_URI)
@@ -59,7 +59,6 @@ mongoose
 const waitingRoom = new Map();
 
 io.on("connection", (socket) => {
-
   socket.on("register", ({ role, userId }) => {
     if (role === "student") {
       if (!userSockets[userId]) {
@@ -76,13 +75,18 @@ io.on("connection", (socket) => {
     }
   });
 
- 
-
   socket.on("join_waiting_room", async ({ userId }) => {
     if (waitingRoom.has(userId)) {
-      console.log("User is already in the waiting room");
       if (!waitingRoom.get(userId).available) {
+        socket.emit("already_paired", "You are already paired in a room");
         console.log("User is already paired in a room");
+        return;
+      } else {
+        socket.emit(
+          "already_in_waiting_room",
+          "You are already in the waiting room"
+        );
+        console.log("User is already in the waiting room");
         return;
       }
     }
@@ -93,7 +97,13 @@ io.on("connection", (socket) => {
       available: true,
       inRoom: false,
     });
+    socket.emit("waiting_room_joined", "Successfully joined the waiting room");
     console.log(`A student (${userId}) joined the waiting room`);
+
+    const availableCount = [...waitingRoom.values()].filter(
+      (user) => user.available
+    ).length;
+    io.emit("waiting_room_count", availableCount);
 
     const availableStudents = [...waitingRoom.keys()].filter(
       (id) =>
@@ -123,8 +133,9 @@ io.on("connection", (socket) => {
       waitingRoom.get(student2).available = false;
       waitingRoom.get(student2).inRoom = true;
 
-      io.to(waitingRoom.get(student1).socketId).emit("room_joined", { roomId });
-      io.to(waitingRoom.get(student2).socketId).emit("room_joined", { roomId });
+      io.to(waitingRoom.get(student1).socketId).emit("room_joined", newRoom);
+      io.to(waitingRoom.get(student2).socketId).emit("room_joined", newRoom);
+      io.emit("waiting_room_count", availableCount);
 
       console.log(`Students ${student1} and ${student2} joined room ${roomId}`);
 
@@ -133,21 +144,24 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("leave_waiting_room", (disconnectedUserId) => {
+    if (disconnectedUserId && waitingRoom.has(disconnectedUserId)) {
+      waitingRoom.delete(disconnectedUserId);
+      console.log(
+        `Removed student (${disconnectedUserId}) from the waiting room`
+      );
+      const availableCount = [...waitingRoom.values()].filter(
+        (user) => user.available
+      ).length;
+      io.emit("waiting_room_count", availableCount);
+    }
+  });
   socket.on("send_message", async (data) => {
     const { roomId, senderId, message } = data;
 
     await saveMessage(roomId, senderId, message);
 
     io.to(roomId).emit("receive_message", data);
-  });
-
-  socket.on("leave_waiting_room", () => {
-    if (disconnectedUserId && waitingRoom.has(disconnectedUserId)) {
-      waitingRoom.delete(disconnectedUserId);
-      console.log(
-        `Removed student (${disconnectedUserId}) from the waiting room`
-      );
-    }
   });
 
   socket.on("disconnect", () => {
