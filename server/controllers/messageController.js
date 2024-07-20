@@ -71,4 +71,33 @@ const getMessages = async (req, res) => {
   }
 };
 
-module.exports = { saveMessage, getMessages };
+const updateAllSeenStatus = async (req, res) => {
+  const { roomId, userId } = req.params;
+  try {
+    await Message.updateMany(
+      { roomId, "seenBy.userId": { $ne: userId } },
+      { $push: { seenBy: { userId } } },
+    );
+    res.status(200).json({ message: "Messages marked as seen" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error updating seen status", error: error.message });
+  }
+};
+const updateSeenStatus = async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const userId = req.user._id;
+
+    await Message.findByIdAndUpdate(messageId, {
+      $addToSet: { seenBy: { userId } },
+    });
+
+    res.sendStatus(200);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+};
+
+module.exports = { saveMessage, getMessages, updateAllSeenStatus };

@@ -22,17 +22,22 @@ export const useMessages = (roomId) => {
     };
   };
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isFetching,refetch } =
-    useInfiniteQuery({
-      queryKey: ["messages", roomId],
-      queryFn: fetchMessages,
-      initialPageParam: 0,
-      getNextPageParam: (lastPage) => lastPage.nextOffset,
-      refetchIntervalInBackground: false,
-
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: false,
-    });
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isFetching,
+    refetch,
+  } = useInfiniteQuery({
+    queryKey: ["messages", roomId],
+    queryFn: fetchMessages,
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => lastPage.nextOffset,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
 
   const [shouldFetch, setShouldFetch] = useState(false);
 

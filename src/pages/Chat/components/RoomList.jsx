@@ -1,16 +1,39 @@
 import { Link } from "react-router-dom";
-import { Plus, Ellipsis, Dot } from "lucide-react";
+import { Plus, Ellipsis, Dot, LoaderCircle } from "lucide-react";
 import { useSelectedRoom } from "@/contexts/selectRoomContext";
 import { socket } from "@/socket";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDateToIso } from "@/utils/formatDateToSingleString";
+import { useAuthContext } from "@/contexts/authContext";
+import { SmallLoading } from "@/components/ui/SmallLoading";
+import { useRoomContext } from "@/contexts/roomContext";
 
-const RoomList = ({ data }) => {
+const RoomList = ({ loading }) => {
   const { selectedRoom, selectRoom } = useSelectedRoom();
-  const anonymousRooms = data.filter((room) => room.roomType === "anonymous");
-  const friendRooms = data.filter((room) => room.roomType === "friend");
-  const groupRooms = data.filter((room) => room.roomType === "group");
+  const { user } = useAuthContext();
+  const { rooms } = useRoomContext();
+  const sortByLastMessageCreatedAt = (rooms) => {
+    return rooms.sort((a, b) => {
+      const aLastMessageCreatedAt = a.lastMessage
+        ? new Date(a.lastMessage.createdAt)
+        : new Date(0);
+      const bLastMessageCreatedAt = b.lastMessage
+        ? new Date(b.lastMessage.createdAt)
+        : new Date(0);
+      return bLastMessageCreatedAt - aLastMessageCreatedAt;
+    });
+  };
+
+  const anonymousRooms = sortByLastMessageCreatedAt(
+    rooms.filter((room) => room.roomType === "anonymous"),
+  );
+  const friendRooms = sortByLastMessageCreatedAt(
+    rooms.filter((room) => room.roomType === "friend"),
+  );
+  const groupRooms = sortByLastMessageCreatedAt(
+    rooms.filter((room) => room.roomType === "group"),
+  );
 
   const joinWatingRoom = () => {
     socket.emit("join_waiting_room", { userId: user._id });
@@ -30,13 +53,15 @@ const RoomList = ({ data }) => {
           </Button>
         </div>
         <div className="grid w-full gap-1">
-          {anonymousRooms.length > 0 ? (
+          {loading ? (
+            <SmallLoading />
+          ) : anonymousRooms.length > 0 ? (
             anonymousRooms.map((item) => (
               <Link to={`/chat/${item.roomId}`} key={item.roomId}>
                 <button
                   disabled={selectedRoom && selectedRoom.roomId === item.roomId}
                   onClick={() => selectRoom(item.roomId)}
-                  className={`group flex w-full cursor-pointer items-center justify-normal gap-2 overflow-hidden rounded-md bg-transparent py-4 px-5 hover:bg-slate-100 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-slate-200`}
+                  className={`group flex w-full cursor-pointer items-center justify-normal gap-2 overflow-hidden rounded-md bg-transparent px-5 py-4 hover:bg-slate-100 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-slate-200`}
                 >
                   <div className="flex flex-row items-center gap-2">
                     <Avatar className="size-10 bg-black">
@@ -58,12 +83,14 @@ const RoomList = ({ data }) => {
                       <h1
                         className={`flex w-fit flex-row items-center gap-0 text-start text-xs ${
                           item.lastMessage?.seen
-                            ? "font-nomral"
+                            ? "font-normal"
                             : "font-semibold"
                         }`}
                       >
                         <span
-                          className={`${item.lastMessage ? "max-w-[75%]" : "max-w-[97%]"} truncate ${item.lastMessage?.seen && "text-slate-600"}`}
+                          className={`${item.lastMessage ? "max-w-[75%]" : "max-w-[97%]"} truncate ${
+                            item.lastMessage?.seen && "text-slate-600"
+                          }`}
                         >
                           {item.lastMessage && item.lastMessage.message
                             ? item.lastMessage.message
@@ -95,10 +122,12 @@ const RoomList = ({ data }) => {
       {/* Friends Section */}
       <div className="flex w-full flex-col gap-5">
         <div className="grid gap-5 px-2">
-          <h2 className="text-lg font-bold">Anonymous Rooms</h2>
+          <h2 className="text-lg font-bold">Friend Rooms</h2>
         </div>
         <div className="grid w-full gap-3">
-          {friendRooms.length > 0 ? (
+          {loading ? (
+            <SmallLoading />
+          ) : friendRooms.length > 0 ? (
             friendRooms.map((item) => (
               <Link to={`/chat/${item.roomId}`} key={item.roomId}>
                 <button
@@ -125,7 +154,9 @@ const RoomList = ({ data }) => {
       <div className="flex w-full flex-col gap-5">
         <h2 className="px-2 text-xl font-semibold">Groups</h2>
         <div className="grid w-full gap-3">
-          {groupRooms.length > 0 ? (
+          {loading ? (
+            <SmallLoading />
+          ) : groupRooms.length > 0 ? (
             groupRooms.map((item) => (
               <Link to={`/chat/${item.roomId}`} key={item.roomId}>
                 <button

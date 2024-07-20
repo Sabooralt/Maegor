@@ -25,26 +25,19 @@ const getRoomsByUserId = async (req, res) => {
 
           return {
             ...room._doc,
-            lastMessage: lastMessage
-              ? {
-                  _id: lastMessage._id,
-                  senderId: lastMessage.senderId,
-                  message: lastMessage.message,
-                  createdAt: lastMessage.createdAt,
-                }
-              : null,
+            lastMessage: lastMessage ? lastMessage : null,
           };
         } catch (messageError) {
           console.error(
             `Error fetching last message for room ${room.roomId}:`,
-            messageError
+            messageError,
           );
           return {
             ...room._doc,
             lastMessage: null,
           };
         }
-      })
+      }),
     );
 
     res.status(200).json(roomsWithLastMessage);

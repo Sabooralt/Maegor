@@ -3,6 +3,7 @@ import { ClientRoutes } from "./routes";
 import { useEffect } from "react";
 import { useAuthContext } from "./contexts/authContext";
 import { socket } from "./socket";
+import { AnimatePresence } from "framer-motion";
 function App() {
   const { user } = useAuthContext();
   useEffect(() => {
@@ -13,7 +14,9 @@ function App() {
   return (
     <div>
       <BrowserRouter>
+      <AnimatePresence mode="wait">
         <ClientRoutes />
+</AnimatePresence>
       </BrowserRouter>
     </div>
   );

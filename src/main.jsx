@@ -10,6 +10,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { SelectedRoomProvider } from "./contexts/selectRoomContext.jsx";
 import { MessageContextProvider } from "./contexts/messageContext.jsx";
+import { RoomContextProvider } from "./contexts/roomContext.jsx";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -26,14 +27,16 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <AuthContextProvider>
       <SelectedRoomProvider>
         <MessageContextProvider>
-          <Sonner closeButton richColors position="bottom-right" />
-          <QueryClientProvider client={queryClient}>
-            <ReactQueryDevtools initialIsOpen={false} />
-            <App />
-          </QueryClientProvider>
-          <Toaster />
+          <RoomContextProvider>
+            <Sonner closeButton richColors position="bottom-right" />
+            <QueryClientProvider client={queryClient}>
+              <ReactQueryDevtools initialIsOpen={false} />
+              <App />
+            </QueryClientProvider>
+            <Toaster />
+          </RoomContextProvider>
         </MessageContextProvider>
       </SelectedRoomProvider>
     </AuthContextProvider>
-  </React.StrictMode>
+  </React.StrictMode>,
 );

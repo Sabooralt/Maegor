@@ -3,10 +3,15 @@
 @tailwind utilities;
 
 .input-styles {
-  @apply border-gray rounded-md focus:ring-indigo-600 py-3 text-base w-full;
+  @apply w-full rounded-md border-gray py-3 text-base focus:ring-indigo-600;
 }
 .items-flex-between {
-  @apply flex flex-row justify-between items-center gap-2;
+  @apply flex flex-row items-center justify-between gap-2;
+}
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+   text-rendering: geometricPrecision;
 }
 @font-face {
   font-family: "Geist";

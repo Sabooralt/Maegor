@@ -13,14 +13,17 @@ import { toast } from "sonner";
 import { useAnonymousSocketEvents } from "@/hooks/useAnonymousSocket";
 import RoomList from "./RoomList";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useRoomContext } from "@/contexts/roomContext";
+import { SmallLoading } from "@/components/ui/SmallLoading";
 
 export const ChatSidebar = () => {
   const { user, token } = useAuthContext();
   const { selectRoom, selectedRoom } = useSelectedRoom();
+  const { dispatch, rooms } = useRoomContext();
 
   useAnonymousSocketEvents();
 
-  const { isPending, error, data, isFetching } = useQuery({
+  const { isPending, error, data, isLoading, isFetching } = useQuery({
     queryKey: ["anonymousRoom"],
     queryFn: async () => {
       const response = await axiosInstance.get(
@@ -33,14 +36,17 @@ export const ChatSidebar = () => {
       );
       return await response.data;
     },
+    retry: 3,
   });
 
-  if (isFetching) return "Loading...";
-
-  if (error) return "An error has occurred: " + error.message;
+  useEffect(() => {
+    if (data) {
+      dispatch({ type: "FETCH_ROOMS", payload: data });
+    }
+  }, [dispatch, data]);
 
   return (
-    <ScrollArea className="h-screen w-full rounded-xl bg-white shadow-xl">
+    <ScrollArea className="h-screen w-full min-w-[20rem] rounded-xl bg-white shadow-xl">
       <div className="flex w-full items-center justify-between p-2">
         <h1 className="text-2xl font-semibold">Chats</h1>
 
@@ -53,7 +59,7 @@ export const ChatSidebar = () => {
       <Separator />
 
       <div className="relative grid gap-5 py-6">
-        {data && <RoomList data={data} />}
+        <RoomList loading={isLoading} />
       </div>
     </ScrollArea>
   );

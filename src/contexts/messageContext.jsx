@@ -22,6 +22,21 @@ export const messageReducer = (state, action) => {
           ? [action.payload, ...state[action.roomId]]
           : [action.payload],
       };
+    case "MESSAGE_SEEN":
+      console.log("updating message as seen");
+      const { _id, userId, timestamp } = action.payload;
+      return {
+        ...state,
+        [action.roomId]: state[action.roomId].map((message) => {
+          if (message._id === _id) {
+            return {
+              ...message,
+              seenBy: [...message.seenBy, { userId, timestamp }],
+            };
+          }
+          return message;
+        }),
+      };
     case "UPDATE_MESSAGE":
       console.log("Update Message...");
       return {

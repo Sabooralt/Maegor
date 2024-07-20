@@ -9,7 +9,9 @@ export const Chat = () => {
           <ChatSidebar />
         </div>
 
-        <Outlet />
+        <div className="size-full">
+          <Outlet />
+        </div>
       </div>
     </div>
   );

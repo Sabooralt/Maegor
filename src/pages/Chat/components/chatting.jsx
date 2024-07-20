@@ -20,15 +20,15 @@ export const Chatting = () => {
 
   if (!selectedRoom) {
     return (
-      <div className="flex items-center gap-2 h-screen text-neutral-600 justify-center size-full">
-        <LoaderCircle className="animate-spin size-5" />
+      <div className="flex size-full h-screen items-center justify-center gap-2 text-neutral-600">
+        <LoaderCircle className="size-5 animate-spin" />
         <span>Loading...</span>
       </div>
     );
   }
 
   return (
-    <div className="relative flex flex-col rounded-xl  h-screen w-full cube-track">
+    <div className="relative flex h-screen w-full flex-col rounded-xl bg-zinc-100">
       <ChattingHeader />
       <ChatMessages />
       <ChatInput />
