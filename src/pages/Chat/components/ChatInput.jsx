@@ -1,6 +1,7 @@
 import { Textarea } from "@/components/ui/textarea";
 import { useAuthContext } from "@/contexts/authContext";
 import { useMessageContext } from "@/contexts/messageContext";
+import { useRoomContext } from "@/contexts/roomContext";
 import { useSelectedRoom } from "@/contexts/selectRoomContext";
 import axiosInstance from "@/utils/axiosInstance";
 import { Paperclip, Send, Smile } from "lucide-react";
@@ -11,6 +12,7 @@ export const ChatInput = () => {
   const { user, token } = useAuthContext();
   const { selectedRoom } = useSelectedRoom();
   const { dispatch: messageDispatch } = useMessageContext();
+  const { dispatch: roomDispatch } = useRoomContext();
   const [message, setMessage] = useState("");
 
   const sendMessage = async () => {
@@ -33,6 +35,11 @@ export const ChatInput = () => {
         payload: newMessage,
         roomId: selectedRoom.roomId,
       });
+      roomDispatch({
+        type: "UPDATE_LASTMSG",
+        payload: newMessage,
+      });
+
       const response = await axiosInstance.post(
         `/messages/newMessage`,
         { roomId: selectedRoom.roomId, senderId: user._id, message },
@@ -40,7 +47,7 @@ export const ChatInput = () => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       if (response.status === 201) {
@@ -52,18 +59,22 @@ export const ChatInput = () => {
           tempId: temporaryId,
           roomId: serverMessage.roomId,
         });
+        roomDispatch({
+          type: "UPDATE_LASTMSG",
+          payload: serverMessage,
+        });
       }
     } catch (error) {
-      toast.error("Failed to send message:", {
-        description: error,
+      toast.error("Failed to send message", {
+        description: error.message || "An unexpected error occurred", // Ensure only string is passed
       });
     }
   };
 
   return (
-    <div className="relative bottom-0 pb-2 h-fit w-full drop-shadow-md">
-      <div className="py-3 bg-slate-50 px-4 gap-5 flex items-center justify-between w-full rounded-lg">
-        <div className="flex items-center text-neutral-800 gap-2">
+    <div className="relative bottom-0 h-fit w-full pb-2 drop-shadow-md">
+      <div className="flex w-full items-center justify-between gap-5 rounded-lg bg-slate-50 px-4 py-3">
+        <div className="flex items-center gap-2 text-neutral-800">
           <Smile className="size-6" />
           <Paperclip className="size-6" />
         </div>
@@ -79,12 +90,12 @@ export const ChatInput = () => {
                 sendMessage();
               }
             }}
-            className="resize-none text-md w-full shadow-sm"
+            className="text-md w-full resize-none shadow-sm"
           />
         </div>
         <button
           onClick={sendMessage}
-          className="bg-gradient-to-r from-indigo-600 to-purple-600 px-3 py-2 size-fit rounded-md"
+          className="size-fit rounded-md bg-gradient-to-r from-indigo-600 to-purple-600 px-3 py-2"
         >
           <Send className="size-5 text-slate-200" />
         </button>

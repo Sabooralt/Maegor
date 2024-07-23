@@ -35,6 +35,26 @@ const RoomList = ({ loading }) => {
     rooms.filter((room) => room.roomType === "group"),
   );
 
+  const getMessageStatus = (item) => {
+    if (!item.lastMessage) return "No messages yet. Start the conversation!";
+    if (!item.lastMessage.success) {
+      return "Sending";
+    }
+    if (item.lastMessage.senderId === user._id) {
+      return item.lastMessage.seenBy.length > 0 ? "Seen" : "Sent";
+    } else {
+      return item.lastMessage.message;
+    }
+  };
+
+  const getMessageClasses = (item) => {
+    const isSeen = item.lastMessage && item.lastMessage.seenBy.length > 0;
+
+    if (item.lastMessage.senderId === user._id) {
+      return `text-slate-500`;
+    }
+  };
+
   const joinWatingRoom = () => {
     socket.emit("join_waiting_room", { userId: user._id });
   };
@@ -72,9 +92,9 @@ const RoomList = ({ loading }) => {
                     <div className="w-full text-start text-sm">
                       <h1
                         className={
-                          item.lastMessage?.seen
+                          item.lastMessage?.senderId === user._id
                             ? "font-normal"
-                            : "font-semibold"
+                            : item.lastMessage?.seen && "font-semibold"
                         }
                       >
                         Unknown User
@@ -82,19 +102,20 @@ const RoomList = ({ loading }) => {
 
                       <h1
                         className={`flex w-fit flex-row items-center gap-0 text-start text-xs ${
-                          item.lastMessage?.seen
+                          item.lastMessage?.senderId === user._id
                             ? "font-normal"
-                            : "font-semibold"
+                            : item.lastMessage?.seen && "font-semibold"
                         }`}
                       >
                         <span
                           className={`${item.lastMessage ? "max-w-[75%]" : "max-w-[97%]"} truncate ${
-                            item.lastMessage?.seen && "text-slate-600"
+                            item.lastMessage?.senderId === user?._id ||
+                            item.lastMessage?.seenBy.includes(user._id)
+                              ? "text-slate-600"
+                              : "font-medium"
                           }`}
                         >
-                          {item.lastMessage && item.lastMessage.message
-                            ? item.lastMessage.message
-                            : "No messages yet. Start the conversation!"}
+                          {getMessageStatus(item)}
                         </span>
                         {item.lastMessage?.createdAt && (
                           <p className="flex w-fit items-center gap-0 text-slate-600">

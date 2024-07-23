@@ -11,6 +11,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { SelectedRoomProvider } from "./contexts/selectRoomContext.jsx";
 import { MessageContextProvider } from "./contexts/messageContext.jsx";
 import { RoomContextProvider } from "./contexts/roomContext.jsx";
+import { TooltipProvider } from "./components/ui/tooltip.jsx";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -29,10 +30,13 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <MessageContextProvider>
           <RoomContextProvider>
             <Sonner closeButton richColors position="bottom-right" />
-            <QueryClientProvider client={queryClient}>
-              <ReactQueryDevtools initialIsOpen={false} />
-              <App />
-            </QueryClientProvider>
+            <TooltipProvider>
+              <QueryClientProvider client={queryClient}>
+                <ReactQueryDevtools initialIsOpen={false} />
+
+                <App />
+              </QueryClientProvider>
+            </TooltipProvider>
             <Toaster />
           </RoomContextProvider>
         </MessageContextProvider>

@@ -9,12 +9,19 @@ export const roomReducer = (state, action) => {
         ...state,
         rooms: action.payload,
       };
-      case "UPDATE_LASTMSG":
-        return{
-            ...state,
-            rooms: []
-        }
-
+    case "UPDATE_LASTMSG":
+      return {
+        ...state,
+        rooms: state.rooms.map((room) => {
+          if (room.roomId === action.payload.roomId) {
+            return {
+              ...room,
+              lastMessage: action.payload,
+            };
+          }
+          return room;
+        }),
+      };
     default:
       return state;
   }

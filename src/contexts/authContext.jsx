@@ -48,7 +48,14 @@ export const AuthContextProvider = ({ children }) => {
     const token = localStorage.getItem("token");
     if (token) {
       axiosInstance
-        .get("/user/me", { headers: { Authorization: `Bearer ${token}` } })
+        .get("/user/me", {
+          headers: { Authorization: `Bearer ${token}` },
+          params: {
+            foo: "bar",
+            baz: ["qux", "quux"],
+            corge: "",
+          },
+        })
         .then((response) => {
           dispatch({
             type: "LOGIN",

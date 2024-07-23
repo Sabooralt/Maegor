@@ -46,7 +46,7 @@ export const ChatSidebar = () => {
   }, [dispatch, data]);
 
   return (
-    <ScrollArea className="h-screen w-full min-w-[20rem] rounded-xl bg-white shadow-xl">
+    <ScrollArea className="h-screen w-full min-w-[20rem] border-r border-black/50 bg-white shadow-xl">
       <div className="flex w-full items-center justify-between p-2">
         <h1 className="text-2xl font-semibold">Chats</h1>
 

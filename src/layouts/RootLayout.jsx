@@ -5,7 +5,7 @@ import { useAuthContext } from "../contexts/authContext";
 export const HomeLayout = () => {
   const { logout } = useAuthContext();
   return (
-    <div className="w-full flex justify-between">
+    <div className="flex w-full justify-between">
       <Link to="/auth/login">
         <Button>Login</Button>
       </Link>

@@ -4,10 +4,10 @@ import { useSelectedRoom } from "@/contexts/selectRoomContext";
 export const ChattingHeader = () => {
   const { selectedRoom } = useSelectedRoom();
   return (
-    <div className="bg-gradient-to-r h-fit relative top-0 p-3 flex rounded-br-lg shadow-lg flex-row justify-between from-indigo-600 to-purple-600 w-full">
-      <div className="flex items-center justify-between w-full rounded-lg gap-2">
-        <div className="flex gap-2 items-center text-white">
-          <div className="size-6 bg-white rounded-full">
+    <div className="relative top-0 flex h-fit w-full flex-row justify-between rounded-br-lg border-b border-black/50 bg-white bg-gradient-to-r p-3 text-black shadow-lg">
+      <div className="flex w-full items-center justify-between gap-2 rounded-lg">
+        <div className="flex items-center gap-2 text-black">
+          <div className="size-6 rounded-full bg-black">
             <Avatar>
               <AvatarImage
                 src={
@@ -26,7 +26,7 @@ export const ChattingHeader = () => {
               : selectedRoom.members.username}
           </p>
         </div>
-        <p className="text-slate-100 text-xs">Online 3 hours ago</p>
+        <p className="text-xs text-black">Online 3 hours ago</p>
       </div>
     </div>
   );
