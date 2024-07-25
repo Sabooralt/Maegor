@@ -8,17 +8,20 @@ import { useAuthContext } from "./contexts/authContext";
 import { Chat } from "./pages/Chat/Chat";
 import { SelectChat } from "./pages/Chat/components/selectchat";
 import { Chatting } from "./pages/Chat/components/chatting";
+import { Feed } from "./pages/Feed/Feed";
+import { Introduction } from "./pages/Introduction";
 
 export const ClientRoutes = () => {
   const { user } = useAuthContext();
   return (
     <Routes>
-      <Route
-        path="/"
-        element={
-          user && user.verified ? <HomeLayout /> : <Navigate to="/auth/login" />
-        }
-      ></Route>
+      <Route path="/" element={<HomeLayout />}>
+        <Route
+          index
+          element={user && user.verified ? <Feed /> : <Navigate to="/intro" />}
+        />
+        <Route path="/intro" element={<Introduction />} />
+      </Route>
 
       <Route
         path="/auth"

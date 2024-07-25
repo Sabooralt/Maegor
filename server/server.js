@@ -8,29 +8,16 @@ const { Server } = require("socket.io");
 const cron = require("node-cron");
 const Room = require("./models/roomModel");
 
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST"],
-  },
-});
-
-// Routes initialization
-const userRoutes = require("./routes/userRoutes");
-const roomRoutes = require("./routes/roomRoutes");
-const messageRoutes = require("./routes/messageRoutes");
-const generateRoomId = require("./utils/generateRoomId");
-const { saveMessage } = require("./controllers/messageController");
-
 // Sockets initialization
-
 const userSockets = {};
 const facultySockets = {};
 const roomSockets = {};
 
+// Middleware
 app.use(express.json());
-app.use(cors());
+app.use(cors()); // Enable CORS for all routes
+
+// Middleware to attach socket.io instance to requests
 app.use((req, res, next) => {
   req.io = io;
   req.userSockets = userSockets;
@@ -40,20 +27,37 @@ app.use((req, res, next) => {
   next();
 });
 
+// Routes initialization
+const userRoutes = require("./routes/userRoutes");
+const roomRoutes = require("./routes/roomRoutes");
+const messageRoutes = require("./routes/messageRoutes");
+const generateRoomId = require("./utils/generateRoomId");
+const { saveMessage } = require("./controllers/messageController");
+
 app.use("/api/user", userRoutes);
 app.use("/api/rooms", roomRoutes);
 app.use("/api/messages", messageRoutes);
+
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*", // Allow all origins
+    methods: ["GET", "POST"],
+  },
+});
 
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("Connected to database");
-    server.listen(process.env.PORT, () => {
-      console.log("Listening to", process.env.PORT);
+    const port = process.env.PORT || 5000;
+    const host = "0.0.0.0"; // Listens on all available network interfaces
+    server.listen(port, host, () => {
+      console.log(`Backend running at http://${host}:${port}`);
     });
   })
   .catch((error) => {
-    console.log(error);
+    console.error("Database connection error:", error);
   });
 
 const waitingRoom = new Map();
