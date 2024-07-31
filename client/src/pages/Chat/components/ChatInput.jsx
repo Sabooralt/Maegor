@@ -3,6 +3,7 @@ import { useAuthContext } from "@/contexts/authContext";
 import { useMessageContext } from "@/contexts/messageContext";
 import { useRoomContext } from "@/contexts/roomContext";
 import { useSelectedRoom } from "@/contexts/selectRoomContext";
+import { useMessages } from "@/hooks/useMessages";
 import axiosInstance from "@/utils/axiosInstance";
 import { Paperclip, Send, Smile } from "lucide-react";
 import { useState } from "react";
@@ -12,6 +13,7 @@ export const ChatInput = () => {
   const { user, token } = useAuthContext();
   const { selectedRoom } = useSelectedRoom();
   const { dispatch: messageDispatch } = useMessageContext();
+  const { addMessage } = useMessages();
   const { dispatch: roomDispatch } = useRoomContext();
   const [message, setMessage] = useState("");
 
@@ -30,6 +32,7 @@ export const ChatInput = () => {
     };
 
     try {
+      setMessage("");
       messageDispatch({
         type: "ADD_MESSAGE",
         payload: newMessage,

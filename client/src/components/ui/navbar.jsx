@@ -1,6 +1,6 @@
 import { Logo } from "@/Logo/Logo";
 import { Button } from "./button";
-import { Plus } from "lucide-react";
+import { MessageCircle, Plus } from "lucide-react";
 import { useAuthContext } from "@/contexts/authContext";
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 import { Input } from "./input";
@@ -9,7 +9,7 @@ import { Link } from "react-router-dom";
 export const Navbar = () => {
   const { user } = useAuthContext();
   return (
-    <div className="fixed border-b shadow-sm border-slate-400 top-0 z-50 flex w-full flex-row items-center justify-between px-10 py-2">
+    <div className="fixed top-0 bg-slate-50 z-50 flex w-full flex-row items-center justify-between border-b border-slate-400 px-10 py-2 shadow-sm">
       <div>
         <Logo size={40} />
       </div>
@@ -20,9 +20,18 @@ export const Navbar = () => {
 
       <div className="flex flex-row items-center gap-5">
         {user && (
-          <Button className="flex flex-row items-center gap-2">
-            <Plus /> Create
-          </Button>
+          <>
+            <Link to="#">
+              <Button className="flex flex-row items-center gap-2">
+                <Plus /> Create
+              </Button>
+            </Link>
+            <Link to="/chat">
+              <Button className="flex flex-row items-center gap-2">
+                <MessageCircle /> Chat
+              </Button>
+            </Link>
+          </>
         )}
 
         {user ? (

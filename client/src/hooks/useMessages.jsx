@@ -1,5 +1,5 @@
 // useMessages.jsx
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthContext } from "@/contexts/authContext";
 import axiosInstance from "@/utils/axiosInstance";
 import { useEffect, useState } from "react";
@@ -8,6 +8,7 @@ import { useMessageContext } from "@/contexts/messageContext";
 export const useMessages = (roomId) => {
   const { token } = useAuthContext();
   const { state, dispatch } = useMessageContext();
+  const queryClient = useQueryClient();
 
   const fetchMessages = async ({ pageParam }) => {
     const response = await axiosInstance.get(`/messages/${roomId}`, {
@@ -27,6 +28,7 @@ export const useMessages = (roomId) => {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    isFetchedAfterMount,
     isFetching,
     refetch,
   } = useInfiniteQuery({
@@ -34,20 +36,21 @@ export const useMessages = (roomId) => {
     queryFn: fetchMessages,
     initialPageParam: 0,
     getNextPageParam: (lastPage) => lastPage.nextOffset,
-    refetchOnMount: true,
+    refetchOnMount: false,
     refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    refetchOnReconnect: true,
   });
 
   const [shouldFetch, setShouldFetch] = useState(false);
 
   useEffect(() => {
-    if (data) {
-      const allMessages = data.pages.flatMap((page) => page.messages);
-      dispatch({ type: "FETCH_MESSAGES", payload: allMessages, roomId });
-      setShouldFetch(false);
+    if (isFetchedAfterMount) {
+      if (data) {
+        const allMessages = data.pages.flatMap((page) => page.messages);
+        dispatch({ type: "FETCH_MESSAGES", payload: allMessages, roomId });
+      }
     }
-  }, [data, roomId, dispatch]);
+  }, [data, dispatch, isFetchedAfterMount]);
 
   useEffect(() => {
     if (isFetching) {
@@ -61,8 +64,31 @@ export const useMessages = (roomId) => {
     }, 2000);
   }, [shouldFetch, setShouldFetch]);
 
+  const addMessage = (newMessage) => {
+    queryClient.setQueryData(["messages", roomId], (oldData) => {
+      if (!oldData || !oldData.pages) {
+        // Initialize the structure if it's not present
+        return {
+          pages: [{ messages: [newMessage] }],
+          pageParams: [null],
+        };
+      }
+
+      return {
+        ...oldData,
+        pages: oldData.pages.map((page, index) => {
+          if (index === 0) {
+            return { ...page, messages: [newMessage, ...page.messages] };
+          }
+          return page;
+        }),
+      };
+    });
+  };
+
   return {
     fetchNextPage,
+    addMessage,
     shouldFetch,
     refetch,
     hasNextPage,

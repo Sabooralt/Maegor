@@ -7,7 +7,7 @@ import { Navbar } from "@/components/ui/navbar";
 export const HomeLayout = () => {
   const { logout } = useAuthContext();
   return (
-    <div className="py-40">
+    <div >
       <Navbar />
 
       <Outlet />

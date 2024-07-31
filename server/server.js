@@ -51,8 +51,8 @@ mongoose
   .then(() => {
     console.log("Connected to database");
     const port = process.env.PORT || 5000;
-    const host = "0.0.0.0"; // Listens on all available network interfaces
-    server.listen(port, host, () => {
+    const host = "0.0.0.0"; 
+    server.listen(port, () => {
       console.log(`Backend running at http://${host}:${port}`);
     });
   })
