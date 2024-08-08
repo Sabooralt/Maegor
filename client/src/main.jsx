@@ -12,13 +12,13 @@ import { SelectedRoomProvider } from "./contexts/selectRoomContext.jsx";
 import { MessageContextProvider } from "./contexts/messageContext.jsx";
 import { RoomContextProvider } from "./contexts/roomContext.jsx";
 import { TooltipProvider } from "./components/ui/tooltip.jsx";
+import { TypingProvider } from "./contexts/typingContext.jsx";
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchOnWindowFocus: true, // Refetch data when window is focused
-      refetchOnReconnect: true, // Refetch data when network is reconnected
-      staleTime: 1000 * 60 * 5, // Data is considered stale after 5 minutes
+      refetchOnReconnect: true,
+      staleTime: 1000 * 60 * 5,
     },
   },
 });
@@ -26,21 +26,22 @@ const queryClient = new QueryClient({
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <AuthContextProvider>
-      <SelectedRoomProvider>
-        <MessageContextProvider>
-          <RoomContextProvider>
+      <RoomContextProvider>
+        <SelectedRoomProvider>
+          <MessageContextProvider>
             <Sonner closeButton richColors position="bottom-right" />
             <TooltipProvider>
               <QueryClientProvider client={queryClient}>
-                <ReactQueryDevtools initialIsOpen={false} />
-
-                <App />
+               {/*   <ReactQueryDevtools initialIsOpen={false} /> */}
+                <TypingProvider>
+                  <App />
+                </TypingProvider>
               </QueryClientProvider>
             </TooltipProvider>
             <Toaster />
-          </RoomContextProvider>
-        </MessageContextProvider>
-      </SelectedRoomProvider>
+          </MessageContextProvider>
+        </SelectedRoomProvider>
+      </RoomContextProvider>
     </AuthContextProvider>
   </React.StrictMode>,
 );

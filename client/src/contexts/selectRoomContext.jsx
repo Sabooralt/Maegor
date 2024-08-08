@@ -1,27 +1,18 @@
 import { createContext, useContext, useState } from "react";
 import { useAuthContext } from "./authContext";
 import axiosInstance from "../utils/axiosInstance";
+import { useRoomContext } from "./roomContext";
 
 export const SelectedRoomContext = createContext();
 
 export const SelectedRoomProvider = ({ children }) => {
   const [selectedRoom, setSelectedRoom] = useState(null);
+  const { rooms } = useRoomContext();
   const { user, token } = useAuthContext();
 
   const selectRoom = async (roomId) => {
-    try {
-      const response = await axiosInstance.get(`/rooms/${roomId}/${user._id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.status === 200) {
-        setSelectedRoom(response.data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch room details:", error);
-    }
+    const response = rooms.length > 0 && rooms.find((room) => roomId === room.roomId);
+    setSelectedRoom(response);
   };
 
   const clearSelectedRoom = () => {

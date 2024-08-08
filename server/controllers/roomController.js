@@ -30,14 +30,14 @@ const getRoomsByUserId = async (req, res) => {
         } catch (messageError) {
           console.error(
             `Error fetching last message for room ${room.roomId}:`,
-            messageError,
+            messageError
           );
           return {
             ...room._doc,
             lastMessage: null,
           };
         }
-      }),
+      })
     );
 
     res.status(200).json(roomsWithLastMessage);
@@ -50,8 +50,24 @@ const getRoomsByUserId = async (req, res) => {
   }
 };
 
-module.exports = {
-  getRoomsByUserId,
+const getRoomByRoomId = async (roomId) => {
+  try {
+    let room = await Room.findOne({ roomId });
+
+    if (room.roomType === "anonymous") {
+      return {
+        _id: room._id,
+        roomId: room.roomId,
+        roomType: room.roomType,
+        createdAt: room.createdAt,
+        updatedAt: room.updatedAt,
+      };
+    } else {
+      return room;
+    }
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 const getRoomById = async (req, res) => {

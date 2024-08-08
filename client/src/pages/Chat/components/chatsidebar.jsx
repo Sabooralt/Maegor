@@ -18,7 +18,6 @@ import { SmallLoading } from "@/components/ui/SmallLoading";
 
 export const ChatSidebar = () => {
   const { user, token } = useAuthContext();
-  const { selectRoom, selectedRoom } = useSelectedRoom();
   const { dispatch, rooms } = useRoomContext();
 
   useAnonymousSocketEvents();

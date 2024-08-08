@@ -16,7 +16,7 @@ export const Chatting = () => {
     if (!selectedRoom) {
       selectRoom(roomId);
     }
-  }, [roomId, selectedRoom]);
+  }, [roomId, selectedRoom, selectRoom]);
 
   if (!selectedRoom) {
     return (

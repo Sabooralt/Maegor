@@ -10,7 +10,9 @@ const Room = require("./models/roomModel");
 
 // Sockets initialization
 const userSockets = {};
+const userRooms = {};
 const facultySockets = {};
+const facultyRooms = {};
 const roomSockets = {};
 
 // Middleware
@@ -51,7 +53,7 @@ mongoose
   .then(() => {
     console.log("Connected to database");
     const port = process.env.PORT || 5000;
-    const host = "0.0.0.0"; 
+    const host = "0.0.0.0";
     server.listen(port, () => {
       console.log(`Backend running at http://${host}:${port}`);
     });
@@ -61,21 +63,45 @@ mongoose
   });
 
 const waitingRoom = new Map();
+const typingUsers = {};
 
 io.on("connection", (socket) => {
-  socket.on("register", ({ role, userId }) => {
-    if (role === "student") {
-      if (!userSockets[userId]) {
-        userSockets[userId] = { socketId: socket.id, waitingRoomJoined: false };
-        console.log("A student connected", userSockets);
-      } else {
-        userSockets[userId].socketId = socket.id;
+  socket.on("register", async ({ role, userId }) => {
+    try {
+      if (role === "student") {
+        if (!userSockets[userId]) {
+          const userRoomsFromDb = await Room.find({ members: userId }).select(
+            "roomId"
+          );
+          const roomIds = userRoomsFromDb.map((room) => room.roomId);
+
+          userSockets[userId] = {
+            socketId: socket.id,
+            waitingRoomJoined: false,
+          };
+          userRooms[userId] = roomIds;
+
+          console.log("A student connected with rooms:", userRooms);
+        } else {
+          userSockets[userId].socketId = socket.id;
+        }
+      } else if (role === "faculty") {
+        if (!facultySockets[userId]) {
+          const facultyRoomsFromDb = await Room.find({
+            members: userId,
+          }).select("roomId");
+          const roomIds = facultyRoomsFromDb.map((room) => room.roomId);
+
+          facultySockets[userId] = { socketId: socket.id };
+          facultyRooms[userId] = roomIds;
+
+          console.log("A faculty connected with rooms:", facultyRooms);
+        } else {
+          facultySockets[userId].socketId = socket.id;
+        }
       }
-    } else if (role === "faculty") {
-      if (!facultySockets[userId]) {
-        facultySockets[userId] = socket.id;
-        console.log("A faculty connected", facultySockets);
-      }
+    } catch (error) {
+      console.error("Error registering user:", error);
     }
   });
 
@@ -164,8 +190,46 @@ io.on("connection", (socket) => {
     const { roomId, senderId, message } = data;
 
     await saveMessage(roomId, senderId, message);
+  });
 
-    io.to(roomId).emit("receive_message", data);
+  socket.on("typing", ({ roomId, userId }) => {
+    console.log(`User ${userId} is typing in room ${roomId}`);
+
+    if (userRooms[userId]?.includes(roomId)) {
+      for (const user in userRooms) {
+        if (userRooms[user].includes(roomId) && user !== userId) {
+          const memberSocketId = userSockets[user]?.socketId;
+          if (memberSocketId) {
+            io.to(memberSocketId).emit("user_typing", { roomId, userId });
+            console.log(
+              `Emitted typing event to user ${user} in room ${roomId}`
+            );
+          }
+        }
+      }
+    } else {
+      console.log(`User ${userId} is not part of room ${roomId}`);
+    }
+  });
+
+  socket.on("stop_typing", ({ roomId, userId }) => {
+    console.log(`User ${userId} stopped typing in room ${roomId}`);
+
+    if (userRooms[userId]?.includes(roomId)) {
+      for (const user in userRooms) {
+        if (userRooms[user].includes(roomId) && user !== userId) {
+          const memberSocketId = userSockets[user]?.socketId;
+          if (memberSocketId) {
+            io.to(memberSocketId).emit("user_stop_typing", { roomId, userId });
+            console.log(
+              `Emitted stop_typing event to user ${user} in room ${roomId}`
+            );
+          }
+        }
+      }
+    } else {
+      console.log(`User ${userId} is not part of room ${roomId}`);
+    }
   });
 
   socket.on("disconnect", () => {

@@ -2,6 +2,7 @@ import { useReducer, createContext, useContext, useEffect } from "react";
 import { socket } from "@/socket";
 import { toast } from "sonner";
 import { useSelectedRoom } from "./selectRoomContext";
+import { useRoomContext } from "./roomContext";
 
 export const MessageContext = createContext();
 
@@ -65,6 +66,7 @@ export const messageReducer = (state, action) => {
 
 export const MessageContextProvider = ({ children }) => {
   const { selectedRoom } = useSelectedRoom();
+  const { dispatch: roomDispatch } = useRoomContext();
   const initialState = {
     error: null,
   };
@@ -73,11 +75,15 @@ export const MessageContextProvider = ({ children }) => {
 
   useEffect(() => {
     const newMessage = (data) => {
-      if (selectedRoom.roomId === data.roomId) {
+     
         dispatch({ type: "ADD_MESSAGE", payload: data, roomId: data.roomId });
+        roomDispatch({
+          type: "UPDATE_LASTMSG",
+          payload: data,
+        });
         toast("You have a new message");
-      }
-    };
+      
+    }
 
     socket.on("newMessage", newMessage);
 

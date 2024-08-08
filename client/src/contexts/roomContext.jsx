@@ -30,7 +30,7 @@ export const roomReducer = (state, action) => {
 export const RoomContextProvider = ({ children }) => {
   const [state, dispatch] = useReducer(roomReducer, {
     rooms: [],
-    lastMessages: [],
+   
   });
 
   console.log("RoomContext state: ", state);

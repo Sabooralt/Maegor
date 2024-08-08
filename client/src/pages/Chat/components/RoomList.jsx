@@ -8,8 +8,10 @@ import { formatDateToIso } from "@/utils/formatDateToSingleString";
 import { useAuthContext } from "@/contexts/authContext";
 import { SmallLoading } from "@/components/ui/SmallLoading";
 import { useRoomContext } from "@/contexts/roomContext";
+import { useTyping } from "@/contexts/typingContext";
 
 const RoomList = ({ loading }) => {
+  const { typingStatus } = useTyping();
   const { selectedRoom, selectRoom } = useSelectedRoom();
   const { user } = useAuthContext();
   const { rooms } = useRoomContext();
@@ -37,10 +39,10 @@ const RoomList = ({ loading }) => {
 
   const getMessageStatus = (item) => {
     if (!item.lastMessage) return "No messages yet. Start the conversation!";
-    if (!item.lastMessage.success) {
-      return "Sending";
-    }
     if (item.lastMessage.senderId === user._id) {
+      if (!item.lastMessage.success) {
+        return "Sending";
+      }
       return item.lastMessage.seenBy.length > 0 ? "Seen" : "Sent";
     } else {
       return item.lastMessage.message;
@@ -115,7 +117,9 @@ const RoomList = ({ loading }) => {
                               : "font-medium"
                           }`}
                         >
-                          {getMessageStatus(item)}
+                          {typingStatus[item.roomId]
+                            ? "Typing"
+                            : getMessageStatus(item)}
                         </span>
                         {item.lastMessage?.createdAt && (
                           <p className="flex w-fit items-center gap-0 text-slate-600">

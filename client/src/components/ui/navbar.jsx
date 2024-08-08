@@ -41,9 +41,9 @@ export const Navbar = () => {
           </Avatar>
         ) : (
           <Link to="/auth/signup">
-            <button className="w-fit rounded-full bg-indigo-600 px-4 py-2 text-white dark:bg-white dark:text-black">
-              Sign Up
-            </button>
+            <button className="w-fit rounded-full bg-black px-4 py-2 text-white dark:bg-white dark:text-black">
+          Sign up
+        </button>
           </Link>
         )}
       </div>
