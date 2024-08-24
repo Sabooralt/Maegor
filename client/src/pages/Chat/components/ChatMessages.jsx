@@ -10,6 +10,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import TypingIndicator from "./TypingIndicator";
 import { useState, useMemo } from "react";
 import { useTyping } from "@/contexts/typingContext";
+import { LoadingMessages } from "./LoadingMessages";
+import { SeenByAndTypingIndicator } from "./seenBy_Typing";
 
 export const ChatMessages = () => {
   const { selectedRoom } = useSelectedRoom();
@@ -68,6 +70,7 @@ export const ChatMessages = () => {
         initialScrollBehavior="smooth"
         scrollViewClassName="w-full h-full flex flex-col-reverse"
         className="h-full w-full"
+        followButtonClassName="hidden"
       >
         {sortedMessages.length > 0 ? (
           sortedMessages.map((message, index) => {
@@ -100,73 +103,9 @@ export const ChatMessages = () => {
           Click me
         </button>
 
-        <AnimatePresence>
-          {typingStatus[selectedRoom.roomId] && (
-            <motion.div
-              initial={{ opacity: 0, y: "100%" }}
-              exit={{ opacity: 0, y: "100%" }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ ease: "easeIn" }}
-              className="absolute -bottom-3 left-3 flex items-center justify-center gap-2 py-4"
-            >
-              <div className="flex items-center -space-x-2">
-                <AnimatePresence mode="wait">
-                  {toggle && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ ease: "backInOut", duration: 0.3 }}
-                    >
-                      <Avatar>
-                        <AvatarImage
-                          src={
-                            selectedRoom.roomType === "anonymous"
-                              ? "/images/A_Avatar.png"
-                              : selectedRoom.members.profilePicture
-                          }
-                          alt="@shadcn"
-                          className="size-6 bg-green-800"
-                        />
-                        <AvatarFallback>CN</AvatarFallback>
-                      </Avatar>
-                    </motion.div>
-                  )}
-                  <Avatar>
-                    <AvatarImage
-                      src={
-                        selectedRoom.roomType === "anonymous"
-                          ? "/images/A_Avatar.png"
-                          : selectedRoom.members.profilePicture
-                      }
-                      alt="@shadcn"
-                      className="size-6 bg-black"
-                    />
-                    <AvatarFallback>CN</AvatarFallback>
-                  </Avatar>
-                </AnimatePresence>
-              </div>
-              <TypingIndicator />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <SeenByAndTypingIndicator />
 
-        <AnimatePresence>
-          {isFetchingNextPage && (
-            <motion.div
-              initial={{ opacity: 0, y: "-100%" }}
-              exit={{ opacity: 0, y: "-100%" }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ ease: "easeIn" }}
-              className="absolute left-0 right-0 top-0 flex translate-x-[10rem] items-center justify-center py-4"
-            >
-              <div className="flex w-fit items-center gap-2 rounded-full bg-black px-5 py-3 text-white">
-                <LoaderCircle className="size-5 animate-spin" />
-                <span>Loading messages...</span>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <LoadingMessages isFetchingNextPage={isFetchingNextPage} />
 
         {shouldFetch && hasNextPage && !isFetchingNextPage && (
           <motion.div

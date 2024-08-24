@@ -38,7 +38,7 @@ export const MessageBox = ({ msg }) => {
             >
               <span className="text-lg">{msg.message}</span>
             </div>
-            {msg.senderId === user?._id && (
+            {!msg.seenBy.length > 0 && msg.senderId === user?._id && (
               <div className="order-first mt-auto flex size-4 items-center justify-center rounded-full border border-black">
                 {msg.success && msg.success && <Check className="size-3" />}
               </div>

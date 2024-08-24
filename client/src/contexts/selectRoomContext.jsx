@@ -11,8 +11,22 @@ export const SelectedRoomProvider = ({ children }) => {
   const { user, token } = useAuthContext();
 
   const selectRoom = async (roomId) => {
-    const response = rooms.length > 0 && rooms.find((room) => roomId === room.roomId);
+    const response =
+      rooms.length > 0 && rooms.find((room) => roomId === room.roomId);
+
     setSelectedRoom(response);
+
+    if (token) {
+      const response = await axiosInstance.post(
+        `/messages/seen/${roomId}/${user._id}`,
+        {}, 
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+    }
   };
 
   const clearSelectedRoom = () => {

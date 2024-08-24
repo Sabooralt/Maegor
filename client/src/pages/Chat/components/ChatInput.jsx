@@ -78,6 +78,7 @@ export const ChatInput = () => {
       _id: temporaryId,
       roomId: selectedRoom.roomId,
       senderId: user._id,
+      seenBy: [],
       message,
       createdAt: temporaryId,
       success: false,
@@ -122,7 +123,7 @@ export const ChatInput = () => {
       }
     } catch (error) {
       toast.error("Failed to send message", {
-        description: error.message || "An unexpected error occurred", // Ensure only string is passed
+        description: error.message || "An unexpected error occurred",
       });
     }
   };
@@ -152,14 +153,11 @@ export const ChatInput = () => {
       <div className="flex w-full items-center justify-between gap-5 rounded-lg bg-slate-50 px-4 py-3">
         <div className="flex items-center gap-2 text-neutral-800">
           <Smile
-            className="size-6"
+            className="size-6 cursor-pointer"
             onClick={() => setShowEmojiPicker((prev) => !prev)}
           />
           {showEmojiPicker && (
-            <div
-              ref={emojiPickerRef}
-              className="absolute bottom-16"
-            >
+            <div ref={emojiPickerRef} className="absolute bottom-16">
               <EmojiPicker emojiVersion="5.0" onEmojiClick={handleEmojiClick} />
             </div>
           )}

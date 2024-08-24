@@ -74,10 +74,33 @@ const getMessages = async (req, res) => {
 const updateAllSeenStatus = async (req, res) => {
   const { roomId, userId } = req.params;
   try {
+    const room = await Room.findOne({ roomId });
+    if (!room) {
+      return res
+        .status(404)
+        .json({ error: "No room found or has been deleted!" });
+    }
     await Message.updateMany(
       { roomId, "seenBy.userId": { $ne: userId } },
-      { $push: { seenBy: { userId } } },
+      { $push: { seenBy: { userId } } }
     );
+
+    if (Array.isArray(room.members)) {
+      for (const member of room.members) {
+        const studentIdString = member.toString();
+
+        if (studentIdString === userId) continue;
+        if (
+          req.userSockets[studentIdString] &&
+          req.userSockets[studentIdString].socketId
+        ) {
+          const socketId = req.userSockets[studentIdString].socketId;
+          req.io.to(socketId).emit("message_seen", { roomId, userId });
+        } else {
+          console.log(`No socket found for student ID: ${studentIdString}`);
+        }
+      }
+    }
     res.status(200).json({ message: "Messages marked as seen" });
   } catch (error) {
     res
